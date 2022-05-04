@@ -1,0 +1,39 @@
+{
+  "name": "pawpaw",
+  "version": "0.0.1",
+  "description": "Dogo App",
+  "main": "index.js",
+  "scripts": {
+    "babel-version": "babel --version",
+    "dev": "nodemon --exec babel-node server.js",
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "author": "Marcio Marques Soares",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/core": "^7.8.4",
+    "ansi-styles": "^6.1.0",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-latest": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dateformat": "^5.0.3",
+    "dotenv": "^10.0.0",
+    "ejs": "^3.1.6",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "joi": "^17.6.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.0.12",
+    "nodemon": "^2.0.14",
+    "passport": "^0.5.0",
+    "passport-facebook": "^3.0.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-http-bearer": "^1.0.1"
+  }
+}
