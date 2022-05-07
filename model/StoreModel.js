@@ -1,11 +1,11 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose'
 
 const reviews = {
-    reviewerId: { type: reviewId },
-    reviewText: { type: String },
-    photos: [ photos ],
-    parentId: { type: reviewId },
-    children: [ reviewId ]
+  reviewerId: { type: reviewId },
+  reviewText: { type: String },
+  photos: [photos],
+  parentId: { type: reviewId },
+  children: [reviewId],
 }
 
 const storeSchema = new mongoose.Schema(
@@ -18,11 +18,11 @@ const storeSchema = new mongoose.Schema(
     reopenDate: { type: String },
     // dates where the business is unavailable
     // this could be through order or manual input.
-    unavailable: [dates]
+    unavailable: [dates],
   },
-  { timestamps: true }
-);
+  { timestamps: true },
+)
 
-const Store = mongoose.model('Store', storeSchema);
+const Store = mongoose.model('Store', storeSchema)
 
-export default Store;
+export default Store

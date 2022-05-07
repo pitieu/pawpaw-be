@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose'
 
 const product = {
-    productId: { type: String },
-    price: {type: Number}
+  productId: { type: String },
+  price: { type: Number },
 }
 
 const orderSchema = new mongoose.Schema(
@@ -12,19 +12,19 @@ const orderSchema = new mongoose.Schema(
     customerId: { type: Number },
 
     serviceId: { type: String },
-    paymentId: {type: String},
+    paymentId: { type: String },
     conversationId: { type: String },
     deliveryAddress: { type: String },
-    
+
     status: { type: String }, // booked, paid, accepted, ongoing, completed, canceled, failed
     bookingOrder: {
-        petsAmount: { type: Number },
-        bookingPeriod: {
-            start: { type: String },
-            end: { type: String },
-        },
-        products: [product],
-        productAddons: [product],
+      petsAmount: { type: Number },
+      bookingPeriod: {
+        start: { type: String },
+        end: { type: String },
+      },
+      products: [product],
+      productAddons: [product],
     },
     platformFee: { type: Number },
     transportCost: { type: Number },
@@ -33,11 +33,11 @@ const orderSchema = new mongoose.Schema(
     totalPrice: { type: Number },
 
     canceledBy: { type: userId },
-    canceledAt: { type: String }
+    canceledAt: { type: String },
   },
-  { timestamps: true }
-);
+  { timestamps: true },
+)
 
-const Order = mongoose.model('Order', orderSchema);
+const Order = mongoose.model('Order', orderSchema)
 
-export default Order;
+export default Order

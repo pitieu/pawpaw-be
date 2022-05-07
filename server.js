@@ -1,30 +1,30 @@
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 
-import cors from 'cors';
-import debug from "./utils/logger.js";
+import cors from 'cors'
+import debug from './utils/logger.js'
 import app from './app.js'
 
-dotenv.config({ path: './.env' });
+dotenv.config({ path: './.env' })
 
-const port = process.env.APP_PORT || 8081;
+const port = process.env.APP_PORT || 8081
 
 app.use(
   cors({
     credentials: true,
-    origin: "http://localhost:3000",
-  })
-);
+    origin: 'http://localhost:3000',
+  }),
+)
 
 mongoose
   .connect(process.env.DATABASE, { useUnifiedTopology: true })
-  .then(() => debug.log('DB connection successful!'));
+  .then(() => debug.log('DB connection successful!'))
 
 app.listen(port, () => {
-  debug.log(`App running on port ${port}...`);
-});
+  debug.log(`App running on port ${port}...`)
+})
 
-app.use(function(err, req, res, next){
+app.use(function (err, req, res, next) {
   let message = ''
   if (err) {
     message = err.message
@@ -32,30 +32,30 @@ app.use(function(err, req, res, next){
     message = 'Unknown Error'
   }
   debug.error(message)
-  res.status(500);
-  res.send({error: "Woops, we encountered an error..."});
+  res.status(500)
+  res.send({ error: 'Woops, we encountered an error...' })
   // res.render('error', { error: "Woops, we encountered an error..." });
-});
+})
 
-process.on('uncaughtException', err => {
-    debug.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
-    console.log(err)
-    // debug.log(err.name, err.message);
-    process.exit(1);
-});
+process.on('uncaughtException', (err) => {
+  debug.log('UNCAUGHT EXCEPTION! 💥 Shutting down...')
+  console.log(err)
+  // debug.log(err.name, err.message);
+  process.exit(1)
+})
 
-process.on('unhandledRejection', err => {
-    debug.log('UNHANDLED REJECTION! 💥 Shutting down...');
-    console.log(err)
-    // debug.log(err.name, err.message);
-    server.close(() => {
-      process.exit(1);
-    });
-});
+process.on('unhandledRejection', (err) => {
+  debug.log('UNHANDLED REJECTION! 💥 Shutting down...')
+  console.log(err)
+  // debug.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1)
+  })
+})
 
 process.on('SIGTERM', () => {
-    debug.log('👋 SIGTERM RECEIVED. Shutting down gracefully');
-    server.close(() => {
-      debug.log('💥 Process terminated!');
-    });
-});
+  debug.log('👋 SIGTERM RECEIVED. Shutting down gracefully')
+  server.close(() => {
+    debug.log('💥 Process terminated!')
+  })
+})

@@ -1,40 +1,40 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
-import path from 'path';
+import path from 'path'
 import session from 'express-session'
 import dotenv from 'dotenv'
 
 import authRouter from './routes/auth.js'
 
-dotenv.config({ path: './.env' });
+dotenv.config({ path: './.env' })
 const __dirname = path.resolve()
 
-const app = express();
+const app = express()
 
-app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser())
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
 
 // configure Express
-app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
+app.set('views', __dirname + '/views')
+app.set('view engine', 'ejs')
 
 app.use(
-  session(
-    { 
-      secret: process.env.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false 
-    }));
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  }),
+)
 
-app.get('/', function(req, res, next){
-  res.redirect('/auth');
-});
+app.get('/', function (req, res, next) {
+  res.redirect('/auth')
+})
 
 // set Routes
-app.use('/auth', authRouter);
+app.use('/auth', authRouter)
 // app.use('/account', accountRouter);
 // app.use('/services', serviceRouter);
 
-export default app;
+export default app

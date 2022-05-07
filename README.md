@@ -1,6 +1,6 @@
 ### Setup
 
-create db folder for macOS catalyna 
+create db folder for macOS catalyna
 `sudo mkdir -p /System/Volumes/Data/data/db`
 `sudo chown -R 'id -un' /System/Volumes/Data/data/db`
 
@@ -14,7 +14,6 @@ run db
 run
 `npm install`
 
-and then 
+and then
 
 run `npm run dev`
-
