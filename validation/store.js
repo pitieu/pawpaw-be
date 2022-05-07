@@ -7,12 +7,12 @@ export const getStoreValidation = (data) => {
   return schema.validate(data)
 }
 
-export const createStoreValidation = () => {
+export const createStoreValidation = (data) => {
   const schema = Joi.object({
     ownerId: Joi.string().required(),
-    name: Joi.string().required(),
+    name: Joi.string().min(3).required(),
     photo: Joi.string(),
-    locations: Joi.number(),
+    locations: Joi.array().items(Joi.number()),
   })
   return schema.validate(data)
 }

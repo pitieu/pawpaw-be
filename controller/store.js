@@ -1,3 +1,4 @@
+import { createStoreValidation } from '../validation/store.js'
 import Store from '../model/StoreModel.js'
 import debug from '../utils/logger.js'
 
@@ -32,7 +33,7 @@ export const createStore = async (data) => {
   if (nameExists) throw { error: 'Store name already exists', status: 400 }
 
   const storeValidation = createStoreValidation(data)
-  if (storeValidation.error()) {
+  if (storeValidation.error) {
     throw {
       error: storeValidation.error.details[0].message,
       status: 400,
@@ -40,16 +41,15 @@ export const createStore = async (data) => {
   }
 
   try {
-    const data = new Store({
+    const storeData = new Store({
       ownerId: data.ownerId,
       name: data.name,
       photo: data.photo,
       locations: data.locations,
     })
-    let storeCreated = await data.save()
-    res.status(201).send({ _id: storeCreated._id })
+    return await storeData.save()
   } catch (e) {
-    debug.error(req.user._id, e.message)
-    res.status(400).send({ error: 'Failed to create store' })
+    console.log(e)
+    throw { error: 'Failed to create store', status: 400 }
   }
 }

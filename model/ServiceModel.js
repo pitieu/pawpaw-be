@@ -1,6 +1,5 @@
 import mongoose from 'mongoose'
 import { User } from './UserModel'
-import { Comment } from './CommentModel'
 
 const ratings = {
   rating: { type: String },
@@ -48,6 +47,7 @@ const serviceSchema = new mongoose.Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     name: { type: String },
     description: { type: String },
+    category: { type: String },
     // location: { type: [Number], index: '2d' },
     photos: [photos],
     rating: [ratings],

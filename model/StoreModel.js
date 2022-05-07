@@ -6,7 +6,7 @@ const storeSchema = new mongoose.Schema(
     name: { type: String },
     photo: { type: String },
     // reviews: [reviews],
-    locations: { type: [Number], index: '2d' },
+    locations: { type: [Number], index: '2dsphere' },
     open: { type: Boolean },
     reopenDate: { type: Date },
     // dates where the business is unavailable
