@@ -27,14 +27,17 @@ app.listen(port, () => {
 app.use(function (err, req, res, next) {
   let message = ''
   if (err) {
-    message = err.message
+    message = err.message || err.error
   } else {
     message = 'Unknown Error'
   }
   debug.error(message)
-  res.status(500)
-  res.send({ error: 'Woops, we encountered an error...' })
-  // res.render('error', { error: "Woops, we encountered an error..." });
+  res.status(err?.status || 500)
+  if (err.error) {
+    res.send(err)
+  } else {
+    res.send({ error: 'Woops, we encountered an error...' })
+  }
 })
 
 process.on('uncaughtException', (err) => {

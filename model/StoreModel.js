@@ -1,24 +1,19 @@
 import mongoose from 'mongoose'
 
-const reviews = {
-  reviewerId: { type: reviewId },
-  reviewText: { type: String },
-  photos: [photos],
-  parentId: { type: reviewId },
-  children: [reviewId],
-}
-
 const storeSchema = new mongoose.Schema(
   {
-    ownerid: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     name: { type: String },
-    photos: { type: String },
-    reviews: [reviews],
+    photo: { type: String },
+    // reviews: [reviews],
+    locations: { type: [Number], index: '2d' },
     open: { type: Boolean },
-    reopenDate: { type: String },
+    reopenDate: { type: Date },
     // dates where the business is unavailable
     // this could be through order or manual input.
-    unavailable: [dates],
+    unavailable: [{ type: Date }],
+    deleted: { type: Boolean },
+    deletedBy: { type: String },
   },
   { timestamps: true },
 )

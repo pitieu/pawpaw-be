@@ -1,11 +1,11 @@
 import express from 'express'
-import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import path from 'path'
 import session from 'express-session'
 import dotenv from 'dotenv'
 
 import authRouter from './routes/auth.js'
+import storeRouter from './routes/store.js'
 
 dotenv.config({ path: './.env' })
 const __dirname = path.resolve()
@@ -34,6 +34,7 @@ app.get('/', function (req, res, next) {
 
 // set Routes
 app.use('/auth', authRouter)
+app.use('/store', storeRouter)
 // app.use('/account', accountRouter);
 // app.use('/services', serviceRouter);
 

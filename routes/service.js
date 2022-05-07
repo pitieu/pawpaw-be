@@ -1,9 +1,8 @@
 import express from 'express'
 import passport from 'passport'
 import serviceCtrl from './../controller/service.js'
-import authCtrl from './../controller/auth.js'
 
-import { isLoggedIn } from '../controller/auth.js'
+import { loggedInArea } from '../middleware/auth'
 
 const router = express.Router()
 
@@ -18,13 +17,9 @@ passport.deserializeUser(function (obj, done) {
   done(null, obj)
 })
 
-router.get('/services', authCtrl.isLoggedIn, serviceCtrl.listServices)
-router.post('/services', authCtrl.isLoggedIn, serviceCtrl.addService)
-router.put('/services', authCtrl.isLoggedIn, serviceCtrl.updateService)
-router.delete(
-  '/services/:serviceId',
-  authCtrl.isLoggedIn,
-  serviceCtrl.deleteService,
-)
+router.get('/services', loggedInArea, serviceCtrl.listServices)
+router.post('/services', loggedInArea, serviceCtrl.addService)
+router.put('/services', loggedInArea, serviceCtrl.updateService)
+router.delete('/services/:serviceId', loggedInArea, serviceCtrl.deleteService)
 
 export default router
