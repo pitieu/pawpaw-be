@@ -42,7 +42,7 @@ const product = {
   selectable: { type: Boolean },
 }
 
-const serviceSchema = new mongoose.Schema(
+export const serviceSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     name: { type: String },

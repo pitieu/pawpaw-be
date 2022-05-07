@@ -14,5 +14,5 @@ export const locationStrToArr = (locations) => {
   if (isNaN(parseFloat(locations[0])) || isNaN(parseFloat(locations[1])))
     throw new Error('Invalid location format')
 
-  return locations
+  return [locations[0], locations[1]]
 }

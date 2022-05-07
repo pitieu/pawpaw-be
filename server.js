@@ -31,6 +31,7 @@ app.use(function (err, req, res, next) {
   } else {
     message = 'Unknown Error'
   }
+  console.log(err)
   debug.error(message)
   res.status(err?.status || 500)
   if (err.error) {

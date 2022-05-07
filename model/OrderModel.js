@@ -5,7 +5,7 @@ const product = {
   price: { type: Number },
 }
 
-const orderSchema = new mongoose.Schema(
+export const orderSchema = new mongoose.Schema(
   {
     orderId: { type: Number },
     providerId: { type: Number },

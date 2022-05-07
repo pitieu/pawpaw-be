@@ -11,7 +11,7 @@ export const createStoreValidation = (data) => {
   const schema = Joi.object({
     ownerId: Joi.string().required(),
     name: Joi.string().min(3).required(),
-    photo: Joi.string(),
+    photo: Joi.object(),
     locations: Joi.array().items(Joi.number()),
   })
   return schema.validate(data)
