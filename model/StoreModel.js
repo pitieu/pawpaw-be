@@ -10,7 +10,7 @@ const reviews = {
 
 const storeSchema = new mongoose.Schema(
   {
-    userid: { type: userId },
+    ownerid: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     name: { type: String },
     photos: { type: String },
     reviews: [reviews],

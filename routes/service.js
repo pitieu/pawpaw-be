@@ -3,6 +3,8 @@ import passport from 'passport'
 import serviceCtrl from './../controller/service.js'
 import authCtrl from './../controller/auth.js'
 
+import { isLoggedIn } from '../controller/auth.js'
+
 const router = express.Router()
 
 router.use(passport.initialize())
