@@ -1,9 +1,4 @@
 import mongoose from 'mongoose'
-import { User } from './UserModel'
-
-const ratings = {
-  rating: { type: String },
-}
 
 const photos = {
   photoProfile: { type: String },
@@ -11,10 +6,10 @@ const photos = {
 }
 
 const reviews = {
-  reviewerId: { type: User },
+  reviewerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   reviewText: { type: String },
   photos: [photos],
-  parentId: { type: reviewId },
+  parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Review' },
   children: [reviewId],
 }
 
@@ -45,19 +40,20 @@ const product = {
 export const serviceSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    storeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Store' },
     name: { type: String },
     description: { type: String },
-    category: { type: String },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'ServiceCategory' },
     // location: { type: [Number], index: '2d' },
     photos: [photos],
-    rating: [ratings],
-    reviews: [reviews],
-    type: { type: Number }, // 0 Grooming, 1 Pet Sitting, 2 Pet Hotel, 3 Pet Walking, 4 Veterinarian, 5 Trainer
-    like: { type: Boolean }, // todo: move it to it's own table
+    // rating: [ratings],
+    // reviews: [reviews],
+    // like: { type: Boolean }, // todo: move it to it's own table
     products: [product],
-    // shampoo ??
     productAddons: [product],
     pricePerKm: { type: Number }, // transportation cost per km
+
+    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     deletedAt: { type: String },
     deleted: { type: Boolean },
   },

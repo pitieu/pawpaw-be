@@ -5,19 +5,19 @@ export const fetchService = async (query) => {
   return await Service.findOne(query).lean()
 }
 
-exports.listServices = (req, res, next) => {
+export const listServices = (req, res, next) => {
   return getService({ userid: req.user.id })
 }
 
-exports.listService = (req, res, next) => {
+export const listService = (req, res, next) => {
   return getService({ userid: req.user.id })
 }
 
-exports.getService = (req, res, next) => {
+export const getService = (req, res, next) => {
   return getService({ _id: req.serviceId })
 }
 
-exports.updateService = (req, res, next) => {
+export const updateService = (req, res, next) => {
   const updateData = {
     name: req.name,
     description: req.description,
@@ -36,7 +36,7 @@ exports.updateService = (req, res, next) => {
   )
 }
 
-exports.deleteService = (req, res, next) => {
+export const deleteService = (req, res, next) => {
   // services flagged as deleted should be deleted after a certain period
   const deleteData = {
     deletedAt: new Date(),
@@ -52,6 +52,6 @@ exports.deleteService = (req, res, next) => {
   )
 }
 
-exports.addService = (req, res, next) => {
+export const addService = (req, res, next) => {
   return req
 }

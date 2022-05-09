@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-export const productProductSchema = new mongoose.Schema(
+export const productReviewSchema = new mongoose.Schema(
   {
     productId: { type: String },
     rating: { type: Number, min: 0, max: 5 },
@@ -9,6 +9,6 @@ export const productProductSchema = new mongoose.Schema(
   { timestamps: true },
 )
 
-const ProductProduct = mongoose.model('ReviewProduct', productProductSchema)
+const ProductReview = mongoose.model('ProductReview', productReviewSchema)
 
-export default ProductProduct
+export default ProductReview
