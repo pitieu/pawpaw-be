@@ -15,8 +15,9 @@ export const storeSchema = new mongoose.Schema(
     // dates where the business is unavailable
     // this could be through order or manual input.
     unavailable: [{ type: Date }],
-    deleted: { type: Boolean },
-    deletedBy: { type: String },
+    deleted: { type: Boolean, default: false },
+    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    deletedAt: { type: Date },
   },
   { timestamps: true },
 )

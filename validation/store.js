@@ -16,3 +16,14 @@ export const createStoreValidation = (data) => {
   })
   return schema.validate(data)
 }
+
+export const filterStorePublicFields = (data) => {
+  return {
+    _id: data._id,
+    ownerId: data.ownerId,
+    name: data.name,
+    locations: data.locations,
+    unavailable: data.unavailable,
+    photo: data.photo,
+  }
+}

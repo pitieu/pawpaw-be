@@ -12,7 +12,10 @@ export const userSchema = new mongoose.Schema(
     phone: { type: String, required: true },
     phoneExt: { type: String, required: true },
     email: { type: String, lowercase: true },
-    profilePhoto: { type: String, default: '' },
+    profilePhoto: {
+      data: Buffer,
+      contentType: String,
+    },
     geo: { type: [Number], index: '2d' }, // geolocation long,lat
     phoneValidated: { type: Boolean },
   },
