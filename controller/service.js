@@ -1,9 +1,8 @@
 const Service = require('../model/ServiceModel')
 
-function getService(query) {
-  return Service.get(query, (result) => {
-    return result
-  })
+export const fetchService = async (query) => {
+  query.deleted = false
+  return await Service.findOne(query).lean()
 }
 
 exports.listServices = (req, res, next) => {

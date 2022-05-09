@@ -9,7 +9,7 @@ import User from '../model/UserModel.js'
 import { loginValidation } from '../validation/auth.js'
 import { validatePassword } from '../controller/auth.js'
 import { createAccount } from '../controller/account.js'
-import { loggedInArea } from '../middleware/auth.js'
+import { authArea } from '../middleware/auth.js'
 
 dotenv.config({ path: './.env' })
 
@@ -26,7 +26,7 @@ router.post('/register', async (req, res, next) => {
   }
 })
 
-router.get('/protected', loggedInArea, async (req, res, next) => {
+router.get('/protected', authArea, async (req, res, next) => {
   res.status(200).send('Has access')
 })
 

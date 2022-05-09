@@ -1,7 +1,7 @@
 import { verifyJWT } from '../utils/jwt.utils.js'
 
 // Deny Access if token is invalid or missing in auth-token
-export const loggedInArea = (req, res, next) => {
+export const authArea = (req, res, next) => {
   const token = req.header('auth-token')
   if (!token) return res.status(401).send('Access Denied')
 

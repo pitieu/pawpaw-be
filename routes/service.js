@@ -7,7 +7,7 @@ import {
   deleteService,
 } from './../controller/service.js'
 
-import { loggedInArea } from '../middleware/auth'
+import { authArea } from '../middleware/auth'
 
 const router = express.Router()
 
@@ -22,9 +22,9 @@ passport.deserializeUser(function (obj, done) {
   done(null, obj)
 })
 
-router.get('/services', loggedInArea, listServices)
-router.post('/services', loggedInArea, addService)
-router.put('/services', loggedInArea, updateService)
-router.delete('/services/:serviceId', loggedInArea, deleteService)
+router.post('/services', authArea, addService)
+router.get('/services', authArea, listServices)
+router.put('/services', authArea, updateService)
+router.delete('/services/:serviceId', authArea, deleteService)
 
 export default router

@@ -14,7 +14,7 @@ import {
   createStore,
   deleteStore,
 } from '../controller/store.js'
-import { loggedInArea } from '../middleware/auth.js'
+import { authArea } from '../middleware/auth.js'
 import { filterStorePublicFields } from '../validation/store.js'
 
 const router = express.Router()
@@ -63,7 +63,7 @@ const upload = multer({
 })
 
 /** Fetch own store */
-router.get('/', loggedInArea, async (req, res, next) => {
+router.get('/', authArea, async (req, res, next) => {
   try {
     let query = { ownerId: req.user._id }
     let storeData = await fetchStore(query)
@@ -75,7 +75,7 @@ router.get('/', loggedInArea, async (req, res, next) => {
   }
 })
 
-router.delete('/', loggedInArea, async (req, res, next) => {
+router.delete('/', authArea, async (req, res, next) => {
   try {
     await deleteStore(req.user._id)
     res.status(200).send({ message: 'Store successfully deleted.' })
@@ -98,66 +98,56 @@ router.get('/:storeId', async (req, res, next) => {
 })
 
 /** Update own store */
-router.put(
-  '/',
-  loggedInArea,
-  upload.single('photo'),
-  async (req, res, next) => {
-    try {
-      req.body.ownerId = req.user._id
-      // console.log(req)
-      console.log(req.body)
-      console.log(req.file)
-      if (req.file) {
-        // req.body.photo = req.file.filename
-        req.body.photo = {
-          data: fs.readFileSync(
-            path.join(__dirname + '/uploads/profile/' + req.file.filename),
-          ),
-          contentType: 'image/png',
-        }
+router.put('/', authArea, upload.single('photo'), async (req, res, next) => {
+  try {
+    req.body.ownerId = req.user._id
+    // console.log(req)
+    console.log(req.body)
+    console.log(req.file)
+    if (req.file) {
+      // req.body.photo = req.file.filename
+      req.body.photo = {
+        data: fs.readFileSync(
+          path.join(__dirname + '/uploads/profile/' + req.file.filename),
+        ),
+        contentType: 'image/png',
       }
-      if (req.body.locations) {
-        req.body.locations = locationStrToArr(req.body.locations)
-      }
-
-      await updateStore(req.body)
-      res.status(200).send({ message: 'Store updated successfully' })
-    } catch (err) {
-      next(err)
     }
-  },
-)
+    if (req.body.locations) {
+      req.body.locations = locationStrToArr(req.body.locations)
+    }
+
+    await updateStore(req.body)
+    res.status(200).send({ message: 'Store updated successfully' })
+  } catch (err) {
+    next(err)
+  }
+})
 
 /** Create store */
-router.post(
-  '/',
-  loggedInArea,
-  upload.single('photo'),
-  async (req, res, next) => {
-    try {
-      req.body.ownerId = req.user._id
-      if (req.file) {
-        // Todo: fix upload profile picture
-        req.body.photo = {
-          data: fs.readFileSync(
-            path.join(__dirname + '/uploads/profile/' + req.file.filename),
-          ),
-          contentType: 'image/png',
-        }
+router.post('/', authArea, upload.single('photo'), async (req, res, next) => {
+  try {
+    req.body.ownerId = req.user._id
+    if (req.file) {
+      // Todo: fix upload profile picture
+      req.body.photo = {
+        data: fs.readFileSync(
+          path.join(__dirname + '/uploads/profile/' + req.file.filename),
+        ),
+        contentType: 'image/png',
       }
-      if (!req.body.ownerId) {
-        throw new Error('User id not valid')
-      }
-      if (req.body.locations) {
-        req.body.locations = locationStrToArr(req.body.locations)
-      }
-      const storeId = await createStore(req.body)
-      res.status(201).send({ _id: storeId._id })
-    } catch (err) {
-      next(err)
     }
-  },
-)
+    if (!req.body.ownerId) {
+      throw new Error('User id not valid')
+    }
+    if (req.body.locations) {
+      req.body.locations = locationStrToArr(req.body.locations)
+    }
+    const storeId = await createStore(req.body)
+    res.status(201).send({ _id: storeId._id })
+  } catch (err) {
+    next(err)
+  }
+})
 
 export default router
