@@ -1,4 +1,4 @@
-const Service = require('../model/ServiceModel')
+import Service from '../model/ServiceModel.js'
 
 export const fetchService = async (query) => {
   query.deleted = false

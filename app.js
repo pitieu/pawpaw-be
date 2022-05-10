@@ -5,6 +5,7 @@ import session from 'express-session'
 import dotenv from 'dotenv'
 
 import authRouter from './routes/auth.js'
+import serviceRouter from './routes/services.js'
 import storeRouter from './routes/store.js'
 
 dotenv.config({ path: './.env' })
@@ -36,6 +37,6 @@ app.get('/', function (req, res, next) {
 app.use('/auth', authRouter)
 app.use('/store', storeRouter)
 // app.use('/account', accountRouter);
-// app.use('/services', serviceRouter);
+app.use('/services', serviceRouter)
 
 export default app

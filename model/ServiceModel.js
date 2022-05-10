@@ -1,17 +1,18 @@
 import mongoose from 'mongoose'
 
 const photos = {
+  name: { type: String },
   photoProfile: { type: String },
   type: { type: Number }, // 0 photo, 1 video
 }
 
-const reviews = {
-  reviewerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  reviewText: { type: String },
-  photos: [photos],
-  parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Review' },
-  children: [reviewId],
-}
+// const reviews = {
+//   reviewerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+//   reviewText: { type: String },
+//   photos: [photos],
+//   parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Review' },
+//   children: [reviewId],
+// }
 
 const prices = {
   price: { type: Number },
@@ -23,7 +24,7 @@ const prices = {
 }
 
 const product = {
-  text: { type: String },
+  name: { type: String },
   description: { type: String },
   price: [prices],
 

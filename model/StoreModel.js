@@ -5,6 +5,7 @@ export const storeSchema = new mongoose.Schema(
     ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     name: { type: String },
     photo: {
+      filename: String,
       data: Buffer,
       contentType: String,
     },
