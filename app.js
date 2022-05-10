@@ -30,7 +30,7 @@ app.use(
 )
 
 app.get('/', function (req, res, next) {
-  res.redirect('/auth')
+  res.send('ok')
 })
 
 // set Routes

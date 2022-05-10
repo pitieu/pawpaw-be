@@ -1,9 +1,9 @@
 import mongoose from 'mongoose'
 
-const photos = {
-  name: { type: String },
-  photoProfile: { type: String },
-  type: { type: Number }, // 0 photo, 1 video
+const photo = {
+  filename: { type: String },
+  data: { type: Buffer },
+  contentType: { type: String },
 }
 
 // const reviews = {
@@ -14,19 +14,19 @@ const photos = {
 //   children: [reviewId],
 // }
 
-const prices = {
-  price: { type: Number },
-  amount: {
-    // amount of animals or animal weight in kg
-    min: { type: Number },
-    max: { type: Number },
-  },
-}
+// const prices = {
+//   price: { type: Number },
+//   amount: {
+//     // amount of animals or animal weight in kg
+//     min: { type: Number },
+//     max: { type: Number },
+//   },
+// }
 
 const product = {
   name: { type: String },
   description: { type: String },
-  price: [prices],
+  price: { type: Number },
 
   // order: {type: Number},
   // default: {type: Boolean},
@@ -40,13 +40,25 @@ const product = {
 
 export const serviceSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    storeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Store' },
-    name: { type: String },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Store',
+      required: true,
+    },
+    name: { type: String, required: true },
     description: { type: String },
-    category: { type: mongoose.Schema.Types.ObjectId, ref: 'ServiceCategory' },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ServiceCategory',
+      required: true,
+    },
     // location: { type: [Number], index: '2d' },
-    photos: [photos],
+    photos: [photo],
     // rating: [ratings],
     // reviews: [reviews],
     // like: { type: Boolean }, // todo: move it to it's own table

@@ -1,65 +1,73 @@
-import mongoose from 'mongoose'
 import dotenv from 'dotenv'
-
 import cors from 'cors'
+
+import { populateServiceCategory } from './initialization/ServiceCategory.js'
 import debug from './utils/logger.js'
 import app from './app.js'
+import { initMongoose } from './mongodb/mongo.js'
 
 dotenv.config({ path: './.env' })
 
 const port = process.env.APP_PORT || 8081
 
-app.use(
-  cors({
-    credentials: true,
-    origin: 'http://localhost:3000',
-  }),
-)
-
-mongoose
-  .connect(process.env.DATABASE, { useUnifiedTopology: true })
-  .then(() => debug.log('DB connection successful!'))
-
-app.listen(port, () => {
-  debug.log(`App running on port ${port}...`)
-})
-
-app.use(function (err, req, res, next) {
-  let message = ''
-  if (err) {
-    message = err.message || err.error
-  } else {
-    message = 'Unknown Error'
+initMongoose().then(() => {
+  const initializeMissingData = async () => {
+    await populateServiceCategory()
   }
-  console.log(err)
-  debug.error(message)
-  res.status(err?.status || 500)
-  if (err.error) {
-    res.send(err)
-  } else {
-    res.send({ error: 'Woops, we encountered an error...' })
+  try {
+    initializeMissingData()
+  } catch (e) {
+    console.log(e)
   }
-})
+  app.use(
+    cors({
+      credentials: true,
+      origin: 'http://localhost:3000',
+    }),
+  )
 
-process.on('uncaughtException', (err) => {
-  debug.log('UNCAUGHT EXCEPTION! 💥 Shutting down...')
-  console.log(err)
-  // debug.log(err.name, err.message);
-  process.exit(1)
-})
+  app.listen(port, async () => {
+    debug.log(`App running on port ${port}...`)
+  })
 
-process.on('unhandledRejection', (err) => {
-  debug.log('UNHANDLED REJECTION! 💥 Shutting down...')
-  console.log(err)
-  // debug.log(err.name, err.message);
-  server.close(() => {
+  app.use(function (err, req, res, next) {
+    let message = ''
+    if (err) {
+      message = err.message || err.error
+    } else {
+      message = 'Unknown Error'
+    }
+    console.log(err)
+    debug.error(message)
+    res.status(err?.status || 500)
+    if (err.error) {
+      res.send(err)
+    } else {
+      res.send({ error: 'Woops, we encountered an error...' })
+    }
+  })
+
+  process.on('uncaughtException', (err) => {
+    debug.log('UNCAUGHT EXCEPTION! 💥 Shutting down...')
+    console.log(err)
+    // debug.log(err.name, err.message);
     process.exit(1)
   })
-})
 
-process.on('SIGTERM', () => {
-  debug.log('👋 SIGTERM RECEIVED. Shutting down gracefully')
-  server.close(() => {
-    debug.log('💥 Process terminated!')
+  process.on('unhandledRejection', (err) => {
+    debug.log('UNHANDLED REJECTION! 💥 Shutting down...')
+    console.log(err)
+    console.log(server)
+    // debug.log(err.name, err.message);
+    server.close(() => {
+      process.exit(1)
+    })
+  })
+
+  process.on('SIGTERM', () => {
+    debug.log('👋 SIGTERM RECEIVED. Shutting down gracefully')
+    server.close(() => {
+      debug.log('💥 Process terminated!')
+    })
   })
 })

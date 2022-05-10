@@ -1,4 +1,6 @@
 import Service from '../model/ServiceModel.js'
+import { addServiceValidation } from '../validation/service.js'
+import { fetchStore } from './store.js'
 
 export const fetchService = async (query) => {
   query.deleted = false
@@ -52,6 +54,27 @@ export const deleteService = (req, res, next) => {
   )
 }
 
-export const addService = (req, res, next) => {
-  return req
+export const addService = async (data, ownerId) => {
+  const serviceValidation = addServiceValidation(data)
+  if (serviceValidation.error)
+    throw {
+      error: serviceValidation.error.details[0].message,
+      status: 400,
+    }
+
+  const storeId = await fetchStore({ ownerId: ownerId })
+
+  const serviceData = new Service({
+    userId: ownerId,
+    storeId: storeId._id,
+    name: data.name,
+    description: data.description,
+    products: data.products,
+    productAddons: data.productAddons,
+    photos: data.photos,
+    pricePerKm: data.pricePerKm,
+    category: data.category,
+  })
+
+  return await serviceData.save()
 }

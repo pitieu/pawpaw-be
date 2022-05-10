@@ -2,8 +2,12 @@ import mongoose from 'mongoose'
 
 export const storeSchema = new mongoose.Schema(
   {
-    ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    name: { type: String },
+    ownerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    name: { type: String, required: true },
     photo: {
       filename: String,
       data: Buffer,

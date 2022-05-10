@@ -30,3 +30,11 @@ run
 and then
 
 run `npm run dev`
+
+### Run Mongodb with replicas
+
+`./startdb.sh`
+
+### Stop Mongodb
+
+`docker-compose down`

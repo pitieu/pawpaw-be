@@ -5,7 +5,13 @@ export const addServiceValidation = (data) => {
     name: Joi.string().min(5).required(),
     description: Joi.string(),
     category: Joi.string(),
-    photos: Joi.array(),
+    photos: Joi.array().items(
+      Joi.object({
+        filename: Joi.string().min(3),
+        data: Joi.binary(),
+        contentType: Joi.string().valid('image/png', 'image/jpeg', 'image/jpg'),
+      }),
+    ),
     products: Joi.array().items(
       Joi.object({
         name: Joi.string().min(3),
@@ -30,7 +36,7 @@ export const addServiceValidation = (data) => {
         selectable: Joi.bool(),
       }),
     ),
-    pricePerKm: Joi.string(),
+    pricePerKm: Joi.number(),
   })
 
   return schema.validate(data)
