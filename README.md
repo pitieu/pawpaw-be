@@ -31,10 +31,14 @@ and then
 
 run `npm run dev`
 
-### Run Mongodb with replicas
+### Run Mongodb
 
 `./startdb.sh`
 
 ### Stop Mongodb
 
-`docker-compose down`
+`docker stop mongo1`
+
+### Setup mongodb replica docker
+
+https://blog.tericcabrel.com/mongodb-replica-set-docker-compose/

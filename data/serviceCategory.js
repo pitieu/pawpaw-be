@@ -1,12 +1,32 @@
 export default [
   {
     name: 'Pet Sitting',
-    description: "Taking care of pets at people's house",
+    description: '',
     key: 'pet_sitting',
   },
   {
-    name: 'Pet Sitting2',
-    description: "Taking care of pets at people's house",
-    key: 'pet_sitting',
+    name: 'Grooming',
+    description: '',
+    key: 'grooming',
+  },
+  {
+    name: 'Pet Hotel',
+    description: '',
+    key: 'pet_hotel',
+  },
+  {
+    name: 'Pet Walking',
+    description: '',
+    key: 'pet_walking',
+  },
+  {
+    name: 'Veterinarian',
+    description: '',
+    key: 'veterinarian',
+  },
+  {
+    name: 'Pet Training',
+    description: '',
+    key: 'pet_training',
   },
 ]

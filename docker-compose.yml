@@ -1,17 +1,6 @@
 version: '3.8'
 
 services:
-  # nodejs:
-  #   container_name: PAW_PI
-  #   image: node:14
-  #   command: npm run dev
-  #   ports:
-  #       - "1000:1000"
-  #   environment:
-  #       NODE_ENV: ${NODEJS_ENV}
-  #   volumes:
-  #       - ${PWD}:/Users/pitieu/Code/pawpaw
-  #   working_dir: /Users/pitieu/Code/pawpaw
   mongo1:
     container_name: mongo1
     image: mongo:4.4
@@ -21,7 +10,7 @@ services:
     networks:
       - mongors-network
     ports:
-      - 27021:27017
+      - 27018:27017
     links:
       - mongo2
       - mongo3
@@ -35,7 +24,7 @@ services:
     networks:
       - mongors-network
     ports:
-      - 27022:27017
+      - 27019:27017
     restart: always
     entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
   mongo3:
@@ -46,10 +35,25 @@ services:
     networks:
       - mongors-network
     ports:
-      - 27023:27017
+      - 27020:27017
     restart: always
     entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
-
+  # nodejs:
+  #   depends_on:
+  #     - mongo1
+  #   container_name: PAW_PI
+  #   image: node:14
+  #   command: npm run dev
+  #   ports:
+  #       - "1000:1000"
+  #   environment:
+  #       NODE_ENV: ${NODEJS_ENV}
+  #   volumes:
+  #       - ${PWD}:/Users/pitieu/Code/pawpaw
+  #   working_dir: /Users/pitieu/Code/pawpaw
+    
 networks:
   mongors-network:
     driver: bridge
+    ipam:
+      driver: default
