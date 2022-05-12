@@ -74,7 +74,7 @@ router.post(
 )
 
 // fetch Service
-router.get('/:serviceId', async (req, res, next) => {
+router.get('/:serviceId/', async (req, res, next) => {
   try {
     let service = await fetchService(
       { _id: req.params.serviceId },
@@ -90,7 +90,7 @@ router.put('/:serviceId', authArea, updateService)
 router.delete('/:serviceId', authArea, deleteService)
 
 // Fetch Service categories
-router.get('/category', async (req, res, next) => {
+router.get('/category/list', async (req, res, next) => {
   try {
     debug.info('Fetch Category')
     const categories = await listServiceCategories({})

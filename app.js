@@ -3,10 +3,15 @@ import cookieParser from 'cookie-parser'
 import path from 'path'
 import session from 'express-session'
 import dotenv from 'dotenv'
+// import winston from 'winston'
+import expressWinston from 'express-winston'
 
-import authRouter from './routes/auth.js'
-import serviceRouter from './routes/services.js'
-import storeRouter from './routes/store.js'
+import authRouter from './routes/auth.route.js'
+import serviceRouter from './routes/services.route.js'
+import storeRouter from './routes/store.route.js'
+
+expressWinston.requestWhitelist.push('body')
+expressWinston.responseWhitelist.push('body')
 
 dotenv.config({ path: './.env' })
 const __dirname = path.resolve()
@@ -20,6 +25,17 @@ app.use(express.urlencoded({ extended: false }))
 // configure Express
 app.set('views', __dirname + '/views')
 app.set('view engine', 'ejs')
+
+// app.use(
+//   expressWinston.logger({
+//     transports: [
+//       new winston.transports.Console({
+//         json: true,
+//         colorize: true,
+//       }),
+//     ],
+//   }),
+// )
 
 app.use(
   session({
@@ -38,5 +54,17 @@ app.use('/auth', authRouter)
 app.use('/store', storeRouter)
 // app.use('/account', accountRouter);
 app.use('/services', serviceRouter)
+
+// log errors after routes
+// app.use(
+//   expressWinston.errorLogger({
+//     transports: [
+//       new winston.transports.Console({
+//         json: true,
+//         colorize: true,
+//       }),
+//     ],
+//   }),
+// )
 
 export default app
