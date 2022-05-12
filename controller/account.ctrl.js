@@ -1,6 +1,6 @@
-import User from '../model/UserModel.js'
+import User from '../model/User.model.js'
 import { registrationValidation } from '../validation/auth.js'
-import { generateHashedPassword } from '../controller/auth.js'
+import { generateHashedPassword } from './auth.ctrl.js'
 
 // export const user = (req, res, next) => {
 //   return req.user

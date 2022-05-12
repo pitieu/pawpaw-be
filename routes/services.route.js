@@ -10,7 +10,7 @@ import {
   updateService,
   deleteService,
   listServiceCategories,
-} from '../controller/service.js'
+} from '../controller/service.ctrl.js'
 import { authArea } from '../middleware/auth.js'
 import { uploadServices } from '../utils/multer.utils.js'
 import debug from '../utils/logger.js'

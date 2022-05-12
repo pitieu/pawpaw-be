@@ -4,11 +4,11 @@ import dotenv from 'dotenv'
 
 import debug from '../utils/logger.js'
 import { signJWT } from '../utils/jwt.utils.js'
-import User from '../model/UserModel.js'
+import User from '../model/User.model.js'
 
 import { loginValidation } from '../validation/auth.js'
-import { validatePassword } from '../controller/auth.js'
-import { createAccount } from '../controller/account.js'
+import { validatePassword } from '../controller/auth.ctrl.js'
+import { createAccount } from '../controller/account.ctrl.js'
 import { authArea } from '../middleware/auth.js'
 
 dotenv.config({ path: './.env' })

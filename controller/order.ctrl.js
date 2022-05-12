@@ -1,4 +1,4 @@
-const Order = require('../model/OrderModel')
+const Order = require('../model/Order.model')
 
 function getOrder(query) {
   return Order.get(query, (result) => {

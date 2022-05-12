@@ -1,5 +1,5 @@
 import { createStoreValidation } from '../validation/store.js'
-import Store from '../model/StoreModel.js'
+import Store from '../model/Store.model.js'
 import debug from '../utils/logger.js'
 
 export const fetchStore = async (query = {}, options) => {

@@ -1,4 +1,4 @@
-import ServiceCategory from '../model/ServiceCategoryModel.js'
+import ServiceCategory from '../model/ServiceCategory.model.js'
 import Categories from '../data/serviceCategory.js'
 import { mongooseInstance } from '../mongodb/mongo.js'
 import debug from '../utils/logger.js'

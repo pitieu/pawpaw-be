@@ -6,14 +6,14 @@ import path from 'path'
 import debug from '../utils/logger.js'
 import { locationStrToArr } from '../utils/location.utils.js'
 import { uploadProfile } from '../utils/multer.utils.js'
-import { listServices } from '../controller/service.js'
+import { listServices } from '../controller/service.ctrl.js'
 
 import {
   fetchStore,
   updateStore,
   createStore,
   deleteStore,
-} from '../controller/store.js'
+} from '../controller/store.ctrl.js'
 import { authArea } from '../middleware/auth.js'
 import { filterStorePublicFields } from '../validation/store.js'
 

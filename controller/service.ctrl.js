@@ -1,7 +1,7 @@
-import Service from '../model/ServiceModel.js'
-import ServiceCategory from '../model/ServiceCategoryModel.js'
+import Service from '../model/Service.model.js'
+import ServiceCategory from '../model/ServiceCategory.model.js'
 import { addServiceValidation } from '../validation/service.js'
-import { fetchStore } from './store.js'
+import { fetchStore } from './store.ctrl.js'
 import debug from '../utils/logger.js'
 
 export const fetchService = async (query = {}, options) => {
