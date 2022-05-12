@@ -2,17 +2,11 @@ import User from '../model/User.model.js'
 import { registrationValidation } from '../validation/auth.js'
 import { generateHashedPassword } from './auth.ctrl.js'
 
-// export const user = (req, res, next) => {
-//   return req.user
-// }
-
-// function getUser(query) {
-//   return User.findOne(query)
-// }
-
-// export const getUser = (req, res, next) => {
-//   return getUser({ _id: req.user.id })
-// }
+export const fetchUser = async (query = {}, options) => {
+  query.deleted = false
+  const user = await User.findOne(query, options).lean()
+  return user
+}
 
 // export const updateUser = (req, res, next) => {
 //   const updateData = {

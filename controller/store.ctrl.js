@@ -19,7 +19,7 @@ export const updateStore = async (newData) => {
   const sanitizedData = {
     name: newData.name.trim(),
     photo: newData.photo,
-    locations: newData.locations,
+    location: newData.location,
     open: newData.open,
     reopenDate: newData.reopenDate,
     unavailable: newData.unavailable,
@@ -67,7 +67,7 @@ export const createStore = async (data) => {
       ownerId: data.ownerId,
       name: data.name,
       photo: data.photo,
-      locations: data.locations,
+      location: data.location,
     })
     return await storeData.save()
   } catch (e) {

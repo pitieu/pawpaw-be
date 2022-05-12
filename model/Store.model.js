@@ -14,7 +14,7 @@ export const storeSchema = new mongoose.Schema(
       contentType: String,
     },
     // reviews: [reviews],
-    locations: { type: [Number], index: '2dsphere' },
+    location: { type: [Number], index: '2dsphere' },
     open: { type: Boolean },
     reopenDate: { type: Date },
     // dates where the business is unavailable

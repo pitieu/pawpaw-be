@@ -4,10 +4,10 @@ import { addServiceValidation } from '../validation/service.js'
 import { fetchStore } from './store.ctrl.js'
 import debug from '../utils/logger.js'
 
-export const fetchService = async (query = {}, options) => {
+export const fetchService = (query = {}, options) => {
   query.deleted = false
   debug.info(query)
-  return await Service.findOne(query, options).lean()
+  return Service.findOne(query, options).lean()
 }
 
 export const listServices = async (query = {}, options) => {
@@ -20,6 +20,12 @@ export const listServiceCategories = async (query = {}, options) => {
   query.deleted = false
   debug.info(query)
   return await ServiceCategory.find(query, options).lean()
+}
+
+export const fetchServiceCategory = async (query = {}, options) => {
+  query.deleted = false
+  debug.info(query)
+  return await ServiceCategory.findOne(query, options).lean()
 }
 
 export const updateService = (req, res, next) => {

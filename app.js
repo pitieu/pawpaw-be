@@ -9,6 +9,7 @@ import expressWinston from 'express-winston'
 import authRouter from './routes/auth.route.js'
 import serviceRouter from './routes/services.route.js'
 import storeRouter from './routes/store.route.js'
+import orderRouter from './routes/order.route.js'
 
 expressWinston.requestWhitelist.push('body')
 expressWinston.responseWhitelist.push('body')
@@ -54,6 +55,7 @@ app.use('/auth', authRouter)
 app.use('/store', storeRouter)
 // app.use('/account', accountRouter);
 app.use('/services', serviceRouter)
+app.use('/order', orderRouter)
 
 // log errors after routes
 // app.use(

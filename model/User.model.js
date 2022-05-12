@@ -18,6 +18,10 @@ export const userSchema = new mongoose.Schema(
     },
     geo: { type: [Number], index: '2d' }, // geolocation long,lat
     phoneValidated: { type: Boolean },
+    deleted: { type: Boolean, default: false },
+    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    deletedAt: { type: Date },
+    deleteReason: { type: String },
   },
   { timestamps: true },
 )
