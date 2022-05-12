@@ -10,7 +10,7 @@ services:
     networks:
       - mongors-network
     ports:
-      - 27018:27017
+      - 27017:27017
     links:
       - mongo2
       - mongo3
@@ -24,7 +24,7 @@ services:
     networks:
       - mongors-network
     ports:
-      - 27019:27017
+      - 27018:27017
     restart: always
     entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
   mongo3:
@@ -35,7 +35,7 @@ services:
     networks:
       - mongors-network
     ports:
-      - 27020:27017
+      - 27019:27017
     restart: always
     entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
   # nodejs:
@@ -57,3 +57,4 @@ networks:
     driver: bridge
     ipam:
       driver: default
+  

@@ -68,7 +68,7 @@ export const serviceSchema = new mongoose.Schema(
 
     deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     deletedAt: { type: String },
-    deleted: { type: Boolean },
+    deleted: { type: Boolean, default: false },
   },
   { timestamps: true },
 )

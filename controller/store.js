@@ -2,9 +2,9 @@ import { createStoreValidation } from '../validation/store.js'
 import Store from '../model/StoreModel.js'
 import debug from '../utils/logger.js'
 
-export const fetchStore = async (query) => {
+export const fetchStore = async (query = {}, options) => {
   query.deleted = false
-  const storeData = await Store.findOne(query).lean()
+  const storeData = await Store.findOne(query, options).lean()
   return storeData
 }
 

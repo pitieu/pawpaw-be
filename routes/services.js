@@ -4,13 +4,16 @@ import fs from 'fs'
 import path from 'path'
 
 import {
+  fetchService,
   listServices,
   addService,
   updateService,
   deleteService,
+  listServiceCategories,
 } from '../controller/service.js'
 import { authArea } from '../middleware/auth.js'
 import { uploadServices } from '../utils/multer.utils.js'
+import debug from '../utils/logger.js'
 
 const router = express.Router()
 
@@ -27,6 +30,7 @@ passport.deserializeUser(function (obj, done) {
   done(null, obj)
 })
 
+// create Service
 router.post(
   '/',
   authArea,
@@ -68,8 +72,32 @@ router.post(
     }
   },
 )
-router.get('/', authArea, listServices)
-router.put('/', authArea, updateService)
+
+// fetch Service
+router.get('/:serviceId', async (req, res, next) => {
+  try {
+    let service = await fetchService(
+      { _id: req.params.serviceId },
+      { 'photos.data': 0 },
+    )
+    res.status(200).send(service)
+  } catch (err) {
+    next(err)
+  }
+})
+
+router.put('/:serviceId', authArea, updateService)
 router.delete('/:serviceId', authArea, deleteService)
+
+// Fetch Service categories
+router.get('/category', async (req, res, next) => {
+  try {
+    debug.info('Fetch Category')
+    const categories = await listServiceCategories({})
+    res.status(200).send({ categories: categories })
+  } catch (err) {
+    next(err)
+  }
+})
 
 export default router

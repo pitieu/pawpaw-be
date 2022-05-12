@@ -1,22 +1,25 @@
 import Service from '../model/ServiceModel.js'
+import ServiceCategory from '../model/ServiceCategoryModel.js'
 import { addServiceValidation } from '../validation/service.js'
 import { fetchStore } from './store.js'
+import debug from '../utils/logger.js'
 
-export const fetchService = async (query) => {
+export const fetchService = async (query = {}, options) => {
   query.deleted = false
-  return await Service.findOne(query).lean()
+  debug.info(query)
+  return await Service.findOne(query, options).lean()
 }
 
-export const listServices = (req, res, next) => {
-  return getService({ userid: req.user.id })
+export const listServices = async (query = {}, options) => {
+  query.deleted = false
+  debug.info(query)
+  return await Service.find(query, options).lean()
 }
 
-export const listService = (req, res, next) => {
-  return getService({ userid: req.user.id })
-}
-
-export const getService = (req, res, next) => {
-  return getService({ _id: req.serviceId })
+export const listServiceCategories = async (query = {}, options) => {
+  query.deleted = false
+  debug.info(query)
+  return await ServiceCategory.find(query, options).lean()
 }
 
 export const updateService = (req, res, next) => {

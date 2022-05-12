@@ -6,6 +6,7 @@ import path from 'path'
 import debug from '../utils/logger.js'
 import { locationStrToArr } from '../utils/location.utils.js'
 import { uploadProfile } from '../utils/multer.utils.js'
+import { listServices } from '../controller/service.js'
 
 import {
   fetchStore,
@@ -31,8 +32,23 @@ passport.deserializeUser(function (obj, done) {
   done(null, obj)
 })
 
+router.get('/:storeId/services', async (req, res, next) => {
+  debug.info("Fetch Store's services")
+  try {
+    let services = await listServices(
+      { storeId: req.params.storeId },
+      { 'photos.data': 0 },
+    )
+    res.status(200).send(services)
+  } catch (err) {
+    next(err)
+  }
+})
+
 /** Fetch own store */
 router.get('/', authArea, async (req, res, next) => {
+  debug.info('Fetch own Store')
+
   try {
     let query = { ownerId: req.user._id }
     let storeData = await fetchStore(query)
@@ -45,6 +61,8 @@ router.get('/', authArea, async (req, res, next) => {
 })
 
 router.delete('/', authArea, async (req, res, next) => {
+  debug.info('Delete Store')
+
   try {
     await deleteStore(req.user._id)
     res.status(200).send({ message: 'Store successfully deleted.' })
@@ -55,6 +73,8 @@ router.delete('/', authArea, async (req, res, next) => {
 
 /** Fetch specific store */
 router.get('/:storeId', async (req, res, next) => {
+  debug.info('Fetch Store')
+
   try {
     let query = { id: req.query.storeId }
     let storeData = await fetchStore(query)
@@ -72,6 +92,7 @@ router.put(
   authArea,
   uploadProfile.single('photo'),
   async (req, res, next) => {
+    debug.info('Update Store')
     try {
       req.body.ownerId = req.user._id
       // console.log(req)
@@ -104,6 +125,7 @@ router.post(
   authArea,
   uploadProfile.single('photo'),
   async (req, res, next) => {
+    debug.info('Create Store')
     try {
       req.body.ownerId = req.user._id
       console.log(req.file)

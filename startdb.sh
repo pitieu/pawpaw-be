@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# docker-compose up -d
+docker-compose up -d
 
-# sleep 5
+sleep 10
 
-# docker exec mongo1 /scripts/rs-init.sh
-docker run --rm -d -p 27017:27017 -h $(hostname) --name mongo1 mongo:4.4.3 --replSet=dbrs 
+docker exec mongo1 /scripts/rs-init.sh
 
-sleep 5 
+# docker run --rm -d -p 27017:27017 -h $(hostname) --name mongo1 mongo:4.4 --replSet=dbrs 
 
-docker exec mongo mongo --eval "rs.initiate();
+# sleep 10
+
+# docker exec mongo1 mongo --eval "rs.initiate();"
 
