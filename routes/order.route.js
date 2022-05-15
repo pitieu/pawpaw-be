@@ -7,7 +7,7 @@ import { authArea } from '../middleware/auth.middleware.js'
 
 const router = express.Router()
 
-router.post('/', authArea, async (req, res, next) => {
+const _createOrder = async (req, res, next) => {
   try {
     if (!req.body.serviceId)
       throw { error: 'ServiceId is required', status: 400 }
@@ -19,6 +19,8 @@ router.post('/', authArea, async (req, res, next) => {
   } catch (err) {
     next(err)
   }
-})
+}
+
+router.post('/', authArea, _createOrder)
 
 export default router

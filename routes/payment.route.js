@@ -8,7 +8,7 @@ dotenv.config({ path: './.env' })
 
 const router = express.Router()
 
-router.get('/token', async (req, res, next) => {
+const _getMidtransToken = async (req, res, next) => {
   try {
     const token = Buffer.from(process.env.MIDTRANS_SERVER_KEY + ':', 'utf-8')
     console.log(token.toString('base64'))
@@ -16,6 +16,8 @@ router.get('/token', async (req, res, next) => {
   } catch (err) {
     next(err)
   }
-})
+}
+
+router.get('/token', _getMidtransToken)
 
 export default router

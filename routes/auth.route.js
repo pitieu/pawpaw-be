@@ -17,20 +17,15 @@ const router = express.Router()
 
 let refreshTokens = []
 
-router.post('/register', async (req, res, next) => {
+const _register = async (req, res, next) => {
   try {
     const userId = await createAccount(req.body)
     res.status(201).send({ _id: userId._id })
   } catch (err) {
     next(err)
   }
-})
-
-router.get('/protected', authArea, async (req, res, next) => {
-  res.status(200).send('Has access')
-})
-
-router.get('/login', async (req, res, next) => {
+}
+const _login = async (req, res, next) => {
   try {
     const validateLogin = loginValidation(req.query)
     if (validateLogin.error)
@@ -80,9 +75,9 @@ router.get('/login', async (req, res, next) => {
     console.log(err)
     next(err)
   }
-})
+}
 
-router.post('/token', (req, res) => {
+const _token = (req, res) => {
   const refreshToken = req.body.token
   if (refreshToken == null) return res.sendStatus(401)
   if (!refreshTokens.includes(refreshToken)) return res.sendStatus(403)
@@ -91,9 +86,8 @@ router.post('/token', (req, res) => {
     const accessToken = generateAccessToken({ username: user.name })
     res.json({ accessToken: accessToken })
   })
-})
-
-router.delete('/logout', (req, res) => {
+}
+const _logout = (req, res) => {
   res.cookie('accessToken', '', {
     maxAge: 0,
     httpOnly: true,
@@ -105,6 +99,14 @@ router.delete('/logout', (req, res) => {
 
   refreshTokens = refreshTokens.filter((token) => token !== req.body.token)
   res.sendStatus(204)
+}
+
+router.get('/protected', authArea, async (req, res, next) => {
+  res.status(200).send('Has access')
 })
+router.post('/register', _register)
+router.get('/login', _login)
+router.post('/token', _token)
+router.delete('/logout', _logout)
 
 export default router

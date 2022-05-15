@@ -30,51 +30,44 @@ passport.deserializeUser(function (obj, done) {
   done(null, obj)
 })
 
-// create Service
-router.post(
-  '/',
-  authArea,
-  uploadServices.array('photos', 5),
-  async (req, res, next) => {
-    try {
-      if (req.files) {
-        let photos = []
-        req.files.forEach((file) => {
-          photos.push({
-            filename: file.filename,
-            data: fs.readFileSync(
-              path.join(__dirname + '/uploads/services/' + file.filename),
-            ),
-            contentType: file.mimetype,
-          })
+const _createService = async (req, res, next) => {
+  try {
+    if (req.files) {
+      let photos = []
+      req.files.forEach((file) => {
+        photos.push({
+          filename: file.filename,
+          data: fs.readFileSync(
+            path.join(__dirname + '/uploads/services/' + file.filename),
+          ),
+          contentType: file.mimetype,
         })
-        req.body.photos = photos
-      }
-      let products = []
-      req.body.products.forEach((product) => {
-        product.price = parseInt(product.price)
-        products.push(product)
       })
-      req.body.products = products
-
-      let productAddons = []
-      req.body.productAddons.forEach((product) => {
-        product.price = parseInt(product.price)
-        productAddons.push(product)
-      })
-      req.body.productAddons = productAddons
-      req.body.pricePerKm = parseInt(req.body.pricePerKm)
-      const newService = await addService(req.body, req.user._id)
-
-      res.status(201).send({ message: 'Service created', id: newService._id })
-    } catch (err) {
-      next(err)
+      req.body.photos = photos
     }
-  },
-)
+    let products = []
+    req.body.products.forEach((product) => {
+      product.price = parseInt(product.price)
+      products.push(product)
+    })
+    req.body.products = products
 
-// fetch Service
-router.get('/:serviceId/', async (req, res, next) => {
+    let productAddons = []
+    req.body.productAddons.forEach((product) => {
+      product.price = parseInt(product.price)
+      productAddons.push(product)
+    })
+    req.body.productAddons = productAddons
+    req.body.pricePerKm = parseInt(req.body.pricePerKm)
+    const newService = await addService(req.body, req.user._id)
+
+    res.status(201).send({ message: 'Service created', id: newService._id })
+  } catch (err) {
+    next(err)
+  }
+}
+
+const _fetchService = async (req, res, next) => {
   try {
     let service = await fetchService(
       { _id: req.params.serviceId },
@@ -84,13 +77,9 @@ router.get('/:serviceId/', async (req, res, next) => {
   } catch (err) {
     next(err)
   }
-})
+}
 
-router.put('/:serviceId', authArea, updateService)
-router.delete('/:serviceId', authArea, deleteService)
-
-// Fetch Service categories
-router.get('/category/list', async (req, res, next) => {
+const _fetchServiceCategories = async (req, res, next) => {
   try {
     debug.info('Fetch Category')
     const categories = await listServiceCategories({})
@@ -98,6 +87,12 @@ router.get('/category/list', async (req, res, next) => {
   } catch (err) {
     next(err)
   }
-})
+}
+
+router.post('/', authArea, uploadServices.array('photos', 5), _createService)
+router.get('/:serviceId/', _fetchService)
+router.put('/:serviceId', authArea, updateService)
+router.delete('/:serviceId', authArea, deleteService)
+router.get('/category/list', _fetchServiceCategories)
 
 export default router
