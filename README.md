@@ -42,3 +42,7 @@ run `npm run dev`
 ### Setup mongodb replica docker
 
 https://blog.tericcabrel.com/mongodb-replica-set-docker-compose/
+
+### MIDTRANS payment simulation
+
+https://simulator.sandbox.midtrans.com/qris/index

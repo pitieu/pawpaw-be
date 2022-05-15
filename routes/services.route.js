@@ -11,7 +11,7 @@ import {
   deleteService,
   listServiceCategories,
 } from '../controller/service.ctrl.js'
-import { authArea } from '../middleware/auth.js'
+import { authArea } from '../middleware/auth.middleware.js'
 import { uploadServices } from '../utils/multer.utils.js'
 import debug from '../utils/logger.js'
 

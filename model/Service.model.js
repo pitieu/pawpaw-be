@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import uniqueValidator from 'mongoose-unique-validator'
 
 const photo = {
   filename: { type: String },
@@ -65,13 +66,52 @@ export const serviceSchema = new mongoose.Schema(
     products: [product],
     productAddons: [product],
     pricePerKm: { type: Number }, // transportation cost per km
-
+    openingHours: {
+      0: {
+        openHour: { type: Number, min: 0, max: 23, default: 8 },
+        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        open: { type: Boolean, default: true },
+      },
+      1: {
+        openHour: { type: Number, min: 0, max: 23, default: 8 },
+        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        open: { type: Boolean, default: true },
+      },
+      2: {
+        openHour: { type: Number, min: 0, max: 23, default: 8 },
+        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        open: { type: Boolean, default: true },
+      },
+      3: {
+        openHour: { type: Number, min: 0, max: 23, default: 8 },
+        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        open: { type: Boolean, default: true },
+      },
+      4: {
+        openHour: { type: Number, min: 0, max: 23, default: 8 },
+        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        open: { type: Boolean, default: true },
+      },
+      5: {
+        openHour: { type: Number, min: 0, max: 23, default: 8 },
+        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        open: { type: Boolean, default: true },
+      },
+      6: {
+        openHour: { type: Number, min: 0, max: 23, default: 8 },
+        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        open: { type: Boolean, default: true },
+      },
+    },
+    negotiableHours: { type: Boolean }, // negotiable Opening / Closing hours
+    negotiableHoursRate: { type: Number }, // price per additional hour over the open/close time
     deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     deletedAt: { type: String },
     deleted: { type: Boolean, default: false },
   },
   { timestamps: true },
 )
+serviceSchema.plugin(uniqueValidator)
 
 const Service = mongoose.model('Service', serviceSchema)
 

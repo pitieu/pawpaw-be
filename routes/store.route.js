@@ -14,8 +14,8 @@ import {
   createStore,
   deleteStore,
 } from '../controller/store.ctrl.js'
-import { authArea } from '../middleware/auth.js'
-import { filterStorePublicFields } from '../validation/store.js'
+import { authArea } from '../middleware/auth.middleware.js'
+import { filterStorePublicFields } from '../validation/store.validation.js'
 
 const __dirname = path.resolve()
 
@@ -107,8 +107,8 @@ router.put(
           contentType: 'image/png',
         }
       }
-      if (req.body.locations) {
-        req.body.locations = locationStrToArr(req.body.locations)
+      if (req.body.location) {
+        req.body.location = locationStrToArr(req.body.location)
       }
 
       await updateStore(req.body)
@@ -143,8 +143,8 @@ router.post(
       if (!req.body.ownerId) {
         throw new Error('User id not valid')
       }
-      if (req.body.locations) {
-        req.body.locations = locationStrToArr(req.body.locations)
+      if (req.body.location) {
+        req.body.location = locationStrToArr(req.body.location)
       }
       const storeId = await createStore(req.body)
       res.status(201).send({ _id: storeId._id })

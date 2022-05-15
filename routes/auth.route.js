@@ -6,10 +6,10 @@ import debug from '../utils/logger.js'
 import { signJWT } from '../utils/jwt.utils.js'
 import User from '../model/User.model.js'
 
-import { loginValidation } from '../validation/auth.js'
+import { loginValidation } from '../validation/auth.validation.js'
 import { validatePassword } from '../controller/auth.ctrl.js'
 import { createAccount } from '../controller/account.ctrl.js'
-import { authArea } from '../middleware/auth.js'
+import { authArea } from '../middleware/auth.middleware.js'
 
 dotenv.config({ path: './.env' })
 

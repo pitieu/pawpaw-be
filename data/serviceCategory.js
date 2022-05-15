@@ -5,6 +5,10 @@ export default [
     key: 'pet_sitting',
     platformFee: 2,
     platformFeeType: 'percent',
+    // calculation based on time
+    // opening and closing hours defined
+    // variable opening and closing hours charged or not
+    // products have option to define timeframe 1h, 8h, 24h
   },
   {
     name: 'Grooming',
@@ -19,6 +23,10 @@ export default [
     key: 'pet_hotel',
     platformFee: 2,
     platformFeeType: 'percent',
+    // calculation based on time
+    // opening and closing hours defined
+    // variable opening and closing hours charged or not
+    // products have option to define timeframe 1h, 8h, 24h
   },
   {
     name: 'Pet Walking',

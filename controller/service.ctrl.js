@@ -1,6 +1,6 @@
 import Service from '../model/Service.model.js'
 import ServiceCategory from '../model/ServiceCategory.model.js'
-import { addServiceValidation } from '../validation/service.js'
+import { addServiceValidation } from '../validation/service.validation.js'
 import { fetchStore } from './store.ctrl.js'
 import debug from '../utils/logger.js'
 

@@ -2,7 +2,10 @@ import { v4 } from 'uuid'
 
 import Order from '../model/Order.model.js'
 import { fetchService } from '../controller/service.ctrl.js'
+import { createPaymentRequest } from '../controller/payment.ctrl.js'
+import { fetchUser } from '../controller/account.ctrl.js'
 import { locationStrToArr } from '../utils/location.utils.js'
+import debug from '../utils/logger.js'
 
 export const listOrders = (query = {}, options) => {
   return Order.find(query, options).lean()
@@ -13,7 +16,10 @@ export const listOrdersMerchant = (req, res, next) => {
 }
 
 export const createOrder = async (data, customerId) => {
-  // const customer = await fetchUser({ _id: customerId })
+  data.customer = await fetchUser({ _id: customerId })
+  data.deliveryAddress = locationStrToArr(data.deliveryAddress)
+  data.bookingPeriodStart = new Date(parseInt(data.bookingPeriodStart))
+  data.bookingPeriodEnd = new Date(parseInt(data.bookingPeriodEnd))
 
   const serviceData = await fetchService(
     { _id: data.serviceId },
@@ -33,7 +39,7 @@ export const createOrder = async (data, customerId) => {
   const transportCost = await calculateTransportCost(
     serviceData.pricePerKm,
     serviceData.storeId.location,
-    locationStrToArr(data.deliveryAddress),
+    data.deliveryAddress,
   )
 
   const productsCost = await calculateProductsCost(data.products)
@@ -45,11 +51,16 @@ export const createOrder = async (data, customerId) => {
     serviceData.category.platformFee,
     serviceData.category.platformFeeType,
   )
-  const orderData = {
+
+  // todo: create payment request which will generate paymentId
+  const payment = await createPaymentRequest(totalCost.total, orderId, data)
+
+  const orderData = new Order({
     orderId: orderId,
-    serviceProviderId: serviceData.userId,
+    providerId: serviceData.userId,
     customerId: customerId,
     serviceId: data.serviceId,
+    paymentId: payment.id,
     status: 'requested',
     platformFee: serviceData.category.platformFee,
     platformFeeType: serviceData.category.platformFeeType,
@@ -66,9 +77,10 @@ export const createOrder = async (data, customerId) => {
     notes: data.notes,
     products: data.products,
     productAddons: data.productAddons,
-  }
+  })
   console.log(orderData)
-  return Promise.resolve(orderData)
+
+  return await orderData.save()
 }
 
 export const generateUniqueOrderId = () => {
@@ -111,12 +123,18 @@ export const calculateTotalCost = async (
   platformFee,
   platformFeeType,
 ) => {
-  const total = productsCost + addonsCost + transportCost
+  const total =
+    parseInt(productsCost) + parseInt(addonsCost) + parseInt(transportCost)
+  if (isNaN(total)) {
+    debug.info(productsCost, addonsCost, transportCost)
+    throw { error: 'Invalid totalCost', status: 400 }
+  }
+
   let platformCost = platformFee
   if (platformFeeType === 'percent') {
     if (platformFee > 10)
       throw { error: 'platform fee can not be bigger than 10%', status: 400 }
-    platformCost = total * (platformFee / 100)
+    platformCost = Math.ceil(total * (platformFee / 100))
     return { total: total + platformCost, platformCost: platformCost }
   }
   if (platformFee > 100000)

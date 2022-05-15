@@ -27,16 +27,16 @@ export const orderSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
-        'requested', // this status means it's waiting for payment
+        'pending', // this status means it's waiting for payment
         'paid', // this status means it's waiting for acceptance of service provider
         'accepted', // this status means it's waiting for processing of service
         'completed', // this status means the order was completed
         'canceled', // this status means the order got canceled
-        'failed', // this status means the order failed to be executed
+        'failed', // this status means the order failed to be executed due to dispute ?
       ],
     },
     platformFee: { type: Number },
-    platformFeeType: { type: Number },
+    platformFeeType: { type: String, enum: ['percent', 'fixed'] },
     platformCost: { type: Number },
     transportCost: { type: Number },
     productsCost: { type: Number },

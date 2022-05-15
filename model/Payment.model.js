@@ -1,11 +1,11 @@
 import mongoose from 'mongoose'
+import uniqueValidator from 'mongoose-unique-validator'
 
 const paymentSchema = new mongoose.Schema(
-  {
-    status: { type: String },
-  },
-  { timestamps: true },
+  {},
+  { timestamps: true, strict: false },
 )
+paymentSchema.plugin(uniqueValidator)
 
 const Payment = mongoose.model('Payment', paymentSchema)
 

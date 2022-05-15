@@ -1,4 +1,4 @@
-import { createStoreValidation } from '../validation/store.js'
+import { createStoreValidation } from '../validation/store.validation.js'
 import Store from '../model/Store.model.js'
 import debug from '../utils/logger.js'
 

@@ -10,6 +10,7 @@ import authRouter from './routes/auth.route.js'
 import serviceRouter from './routes/services.route.js'
 import storeRouter from './routes/store.route.js'
 import orderRouter from './routes/order.route.js'
+import paymentRouter from './routes/payment.route.js'
 
 expressWinston.requestWhitelist.push('body')
 expressWinston.responseWhitelist.push('body')
@@ -57,6 +58,9 @@ app.use('/store', storeRouter)
 app.use('/services', serviceRouter)
 app.use('/order', orderRouter)
 
+if (process.env.NODEJS_ENV === 'development') {
+  app.use('/payment', paymentRouter)
+}
 // log errors after routes
 // app.use(
 //   expressWinston.errorLogger({

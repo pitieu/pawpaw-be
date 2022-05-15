@@ -1,5 +1,5 @@
 import User from '../model/User.model.js'
-import { registrationValidation } from '../validation/auth.js'
+import { registrationValidation } from '../validation/auth.validation.js'
 import { generateHashedPassword } from './auth.ctrl.js'
 
 export const fetchUser = async (query = {}, options) => {

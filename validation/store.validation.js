@@ -12,7 +12,7 @@ export const createStoreValidation = (data) => {
     ownerId: Joi.string().required(),
     name: Joi.string().min(3).required(),
     photo: Joi.object(),
-    locations: Joi.array().items(Joi.number()),
+    location: Joi.array().items(Joi.number()),
   })
   return schema.validate(data)
 }
@@ -22,7 +22,7 @@ export const filterStorePublicFields = (data) => {
     _id: data._id,
     ownerId: data.ownerId,
     name: data.name,
-    locations: data.locations,
+    location: data.locations,
     unavailable: data.unavailable,
     photo: data.photo,
   }
