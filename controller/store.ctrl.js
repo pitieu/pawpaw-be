@@ -1,4 +1,7 @@
-import { createStoreValidation } from '../validation/store.validation.js'
+import {
+  createStoreValidation,
+  updateStoreValidation,
+} from '../validation/store.validation.js'
 import Store from '../model/Store.model.js'
 import debug from '../utils/logger.js'
 
@@ -9,7 +12,7 @@ export const fetchStore = async (query = {}, options) => {
 }
 
 export const updateStore = async (newData) => {
-  // console.log('update store', newData)
+  newData.name = newData.name.trim()
 
   if (!newData.ownerId) throw { error: 'OwnerId is required', status: 400 }
 
@@ -17,12 +20,21 @@ export const updateStore = async (newData) => {
   if (nameExists) throw { error: 'Store name already exists', status: 400 }
 
   const sanitizedData = {
-    name: newData.name.trim(),
+    name: newData.name,
     photo: newData.photo,
     location: newData.location,
     open: newData.open,
     reopenDate: newData.reopenDate,
     unavailable: newData.unavailable,
+    openingHours: newData.openingHours,
+  }
+
+  const storeValidation = updateStoreValidation(sanitizedData)
+  if (storeValidation.error) {
+    throw {
+      error: storeValidation.error.details[0].message,
+      status: 400,
+    }
   }
 
   const storeData = await Store.findOneAndUpdate(
@@ -48,6 +60,7 @@ export const StoreNameExists = async (name, ownerId) => {
 }
 
 export const createStore = async (data) => {
+  data.name = data.name.trim()
   const storeExist = await storeExists(data.ownerId)
   if (storeExist) throw { error: 'User already has a store', status: 400 }
 
