@@ -19,38 +19,38 @@ export const storeSchema = new mongoose.Schema(
     open: { type: Boolean },
     reopenDate: { type: Date },
     openingHours: {
-      0: {
-        openHour: { type: Number, min: 0, max: 23, default: 8 },
+      mon: {
+        openingHour: { type: Number, min: 0, max: 23, default: 8 },
         closingHour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
-      1: {
-        openHour: { type: Number, min: 0, max: 23, default: 8 },
+      tue: {
+        openingHour: { type: Number, min: 0, max: 23, default: 8 },
         closingHour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
-      2: {
-        openHour: { type: Number, min: 0, max: 23, default: 8 },
+      wed: {
+        openingHour: { type: Number, min: 0, max: 23, default: 8 },
         closingHour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
-      3: {
-        openHour: { type: Number, min: 0, max: 23, default: 8 },
+      thu: {
+        openingHour: { type: Number, min: 0, max: 23, default: 8 },
         closingHour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
-      4: {
-        openHour: { type: Number, min: 0, max: 23, default: 8 },
+      fri: {
+        openingHour: { type: Number, min: 0, max: 23, default: 8 },
         closingHour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
-      5: {
-        openHour: { type: Number, min: 0, max: 23, default: 8 },
+      sat: {
+        openingHour: { type: Number, min: 0, max: 23, default: 8 },
         closingHour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
-      6: {
-        openHour: { type: Number, min: 0, max: 23, default: 8 },
+      sun: {
+        openingHour: { type: Number, min: 0, max: 23, default: 8 },
         closingHour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
