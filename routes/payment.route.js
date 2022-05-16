@@ -7,6 +7,7 @@ import { authArea } from '../middleware/auth.middleware.js'
 import {
   addPaymentNotification,
   checkStatus,
+  requestNewPayment,
 } from '../controller/payment.ctrl.js'
 import { updateOrderStatus } from '../controller/order.ctrl.js'
 
@@ -91,6 +92,25 @@ const _checkStatus = async (req, res, next) => {
   debug.info(status)
   res.status(200).send(status)
 }
+
+const _requestNewPayment = async (req, res, next) => {
+  try {
+    req.body.customer = req.user
+    const payment = await requestNewPayment(
+      req.params.orderId,
+      req.body,
+      req.user._id,
+    )
+    debug.info(payment)
+    res.status(200).send({
+      message: 'New payment requested',
+      // paymentId: payment.payment.paymentId,
+    })
+  } catch (e) {
+    next(e)
+  }
+}
+
 if (process.env.NODEJS_ENV == 'development') {
   router.get('/:orderId/status', _checkStatus)
 }
@@ -101,4 +121,6 @@ router.post('/notifications/payaccount', _payaccount)
 router.post('/notifications/redirect', _ok)
 router.post('/notifications/unfinishedredirect', _ok)
 router.post('/notifications/error', _ok)
+router.post('/order/:orderId', authArea, _requestNewPayment)
+
 export default router

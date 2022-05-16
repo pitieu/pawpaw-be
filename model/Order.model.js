@@ -9,7 +9,7 @@ const product = {
 
 export const orderSchema = new mongoose.Schema(
   {
-    orderId: { type: String, unique: true },
+    orderId: { type: String, unique: true, required: true },
     // service seller
     providerId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -26,9 +26,10 @@ export const orderSchema = new mongoose.Schema(
       status: {
         type: String,
         enum: ['pending', 'paid', 'canceled', 'expired', 'failed'],
+        required: true,
       },
       statusReason: { type: String, default: '' },
-      paymentId: { type: String },
+      paymentId: { type: String, required: true },
     },
     conversationId: { type: String },
     status: {
@@ -41,6 +42,7 @@ export const orderSchema = new mongoose.Schema(
         'canceled', // this status means the order got canceled
         'failed', // this status means the order failed to be executed due to dispute ?
       ],
+      required: true,
     },
     statusReason: { type: String, default: '' },
     platformFee: { type: Number, default: 2.5 },
@@ -49,11 +51,11 @@ export const orderSchema = new mongoose.Schema(
       enum: ['percent', 'fixed'],
       default: 'percent',
     },
-    platformCost: { type: Number },
-    transportCost: { type: Number },
-    productsCost: { type: Number },
-    addonsCost: { type: Number },
-    totalCost: { type: Number },
+    platformCost: { type: Number, required: true },
+    transportCost: { type: Number, required: true },
+    productsCost: { type: Number, required: true },
+    addonsCost: { type: Number, required: true },
+    totalCost: { type: Number, required: true },
 
     canceledBy: {
       type: mongoose.Schema.Types.ObjectId,

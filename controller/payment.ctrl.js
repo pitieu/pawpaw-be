@@ -3,12 +3,17 @@ import axios from 'axios'
 import debug from '../utils/logger.js'
 import Payment from '../model/Payment.model.js'
 import PaymentNotification from '../model/PaymentNotification.model.js'
+import Order from '../model/Order.model.js'
+import { fetchOrder } from './order.ctrl.js'
 
 export const createPaymentRequest = async (cost, orderId, data) => {
   const response = await sendPaymentRequest(cost, orderId, data)
-  const paymentData = new Payment(response.data)
+  // debug.info(response)
+  if (!response) {
+    throw { error: 'Failed to create payment request' }
+  }
+  const paymentData = new Payment(response)
   const savedData = await paymentData.save()
-  console.log(savedData)
   return savedData
 }
 
@@ -28,15 +33,13 @@ export const queryPaymentGateway = (url, method, data = {}) => {
       Authorization: authorization,
     },
     data: data,
-  }).then((resp) => {
-    return resp.data
   })
 }
 
 export const checkStatus = (orderId) => {
   const url = process.env.MIDTRANS_API_URL_V2 + orderId + '/status'
 
-  return queryPaymentGateway(url, 'get')
+  return queryPaymentGateway(url, 'get').then((res) => res.data)
 }
 
 export const sendPaymentRequest = async (cost, orderId, data) => {
@@ -153,12 +156,63 @@ export const sendPaymentRequest = async (cost, orderId, data) => {
     // alfamart_free_text_1 alfamart_free_text_2 alfamart_free_text_3 fields for alfamart
     // where it would appear in printed receipt
   }
-
+  console.log(axiosData)
   const url = process.env.MIDTRANS_API_URL_V2 + 'charge'
-  return queryPaymentGateway(url, 'post', axiosData)
+  return queryPaymentGateway(url, 'post', axiosData).then((res) => res.data)
 }
 
 export const addPaymentNotification = async (data) => {
   const paymentData = new PaymentNotification(data)
   return await paymentData.save()
+}
+
+export const cancelPayment = async (orderId) => {
+  const url = process.env.MIDTRANS_API_URL_V2 + orderId + '/cancel'
+
+  const response = await queryPaymentGateway(url, 'post').then(
+    (res) => res.data,
+  )
+  const paymentData = new Payment(response)
+  const newPayment = await paymentData.save()
+
+  if (response.status_code != '200') {
+    throw { error: response.status_message, status: 400 }
+  }
+
+  const update = await Order.updateOne(
+    { orderId: orderId, status: 'pending' },
+    { 'payment.status': 'canceled' },
+    { new: true },
+  )
+  return update
+}
+
+export const requestNewPayment = async (orderId, payment, customerId) => {
+  const order = await fetchOrder({ orderId: orderId, customerId: customerId })
+  if (!order) {
+    throw { error: 'Could not find order', status: 400 }
+  }
+  try {
+    await cancelPayment(orderId)
+  } catch (e) {
+    debug.error(e)
+  }
+  const response = await sendPaymentRequest(
+    order.totalCost,
+    order.orderId,
+    payment,
+  )
+  if (response.status_code == '200' || response.status_code == '201') {
+    const paymentData = new Payment(response)
+    const newPayment = await paymentData.save()
+    return Order.updateOne(
+      { orderId: orderId, status: 'pending', customerId: customerId },
+      {
+        'payment.status': 'pending',
+        'payment.paymentId': response.transaction_id,
+      },
+      { new: true },
+    )
+  }
+  throw { error: response.status_message, status: 400 }
 }

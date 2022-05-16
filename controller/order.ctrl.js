@@ -133,7 +133,7 @@ export const createOrder = async (data, customerId) => {
       status: 'pending',
       paymentId: payment.transaction_id,
     },
-    status: 'requested',
+    status: 'pending',
     platformFee: serviceData.category.platformFee,
     platformFeeType: serviceData.category.platformFeeType,
     platformCost: totalCost.platformCost,
@@ -147,9 +147,9 @@ export const createOrder = async (data, customerId) => {
     products: data.products,
     productAddons: data.productAddons,
   })
-  console.log(orderData)
+  // console.log(orderData)
 
-  return await orderData.save()
+  return orderData.save()
 }
 
 export const generateUniqueOrderId = () => {

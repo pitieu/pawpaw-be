@@ -13,9 +13,10 @@ const _createOrder = async (req, res, next) => {
       throw { error: 'ServiceId is required', status: 400 }
 
     const order = await createOrder(req.body, req.user._id)
+
     res
       .status(201)
-      .send({ message: 'Order successfully created', _id: order._id })
+      .send({ message: 'Order successfully created', orderId: order.orderId })
   } catch (err) {
     next(err)
   }
