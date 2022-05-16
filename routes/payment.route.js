@@ -8,6 +8,7 @@ import {
   addPaymentNotification,
   checkStatus,
   requestNewPayment,
+  cancelPayment,
 } from '../controller/payment.ctrl.js'
 import { updateOrderStatus } from '../controller/order.ctrl.js'
 
@@ -88,9 +89,23 @@ const _ok = (req, res, next) => {
 }
 
 const _checkStatus = async (req, res, next) => {
-  const status = await checkStatus(req.params.orderId)
-  debug.info(status)
-  res.status(200).send(status)
+  try {
+    const status = await checkStatus(req.params.orderId)
+    debug.info(status)
+    res.status(200).send(status)
+  } catch (e) {
+    next(e)
+  }
+}
+
+const _cancelPayment = async (req, res, next) => {
+  try {
+    const status = await cancelPayment(req.params.orderId)
+    debug.info(status)
+    res.status(200).send(status)
+  } catch (e) {
+    next(e)
+  }
 }
 
 const _requestNewPayment = async (req, res, next) => {
@@ -112,7 +127,8 @@ const _requestNewPayment = async (req, res, next) => {
 }
 
 if (process.env.NODEJS_ENV == 'development') {
-  router.get('/:orderId/status', _checkStatus)
+  router.get('/order/:orderId/status', _checkStatus)
+  router.post('/order/:orderId/cancel', _cancelPayment)
 }
 router.get('/token', _getMidtransToken)
 router.post('/notifications/payment', _paymentNotification)

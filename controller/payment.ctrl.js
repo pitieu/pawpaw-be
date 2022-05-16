@@ -172,18 +172,22 @@ export const cancelPayment = async (orderId) => {
   const response = await queryPaymentGateway(url, 'post').then(
     (res) => res.data,
   )
-  const paymentData = new Payment(response)
-  const newPayment = await paymentData.save()
-
-  if (response.status_code != '200') {
+  if (response.status_code != '200' && response.status_code != '201') {
     throw { error: response.status_message, status: 400 }
   }
+
+  const paymentData = new Payment(response)
+  const newPayment = await paymentData.save()
 
   const update = await Order.updateOne(
     { orderId: orderId, status: 'pending' },
     { 'payment.status': 'canceled' },
     { new: true },
   )
+
+  if (update.modifiedCount == 0)
+    throw { error: 'No order was modified', status: 400 }
+
   return update
 }
 
@@ -192,6 +196,7 @@ export const requestNewPayment = async (orderId, payment, customerId) => {
   if (!order) {
     throw { error: 'Could not find order', status: 400 }
   }
+  // cancel Payment doesn't need to succeed in order to create a new payment later
   try {
     await cancelPayment(orderId)
   } catch (e) {
