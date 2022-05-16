@@ -11,6 +11,10 @@ export const listOrders = (query = {}, options) => {
   return Order.find(query, options).lean()
 }
 
+export const fetchOrder = (query = {}, options) => {
+  return Order.findOne(query, options).lean()
+}
+
 export const listOrdersMerchant = (req, res, next) => {
   return listOrders({ providerId: req.user.id })
 }
@@ -141,6 +145,18 @@ export const calculateTotalCost = async (
     throw { error: 'platform fee can not be bigger than 100.000', status: 400 }
 
   return { total: total + platformFee, platformCost: platformCost }
+}
+
+export const updateOrderStatus = async (data) => {
+  const query = { orderId: data.order_id }
+  const order = await fetchOrder(query)
+  if (!order) {
+    throw { error: 'Could not find order from notification data', status: 400 }
+  }
+  if (order.status == 'pending') {
+    await Order.updateOne(query, { status: 'paid' }, { new: true })
+  }
+  return Promise.resolve(order)
 }
 
 // exports.listOrders = (req, res, next) => {

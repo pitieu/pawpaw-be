@@ -1,6 +1,8 @@
 import axios from 'axios'
 
+import debug from '../utils/logger.js'
 import Payment from '../model/Payment.model.js'
+import PaymentNotification from '../model/PaymentNotification.model.js'
 
 export const createPaymentRequest = async (cost, orderId, data) => {
   const response = await sendPaymentRequest(cost, orderId, data)
@@ -8,6 +10,33 @@ export const createPaymentRequest = async (cost, orderId, data) => {
   const savedData = await paymentData.save()
   console.log(savedData)
   return savedData
+}
+
+export const queryPaymentGateway = (url, method, data = {}) => {
+  const username = process.env.MIDTRANS_SERVER_KEY
+  const password = ''
+
+  const encodedBase64Token = Buffer.from(`${username}:${password}`).toString(
+    'base64',
+  )
+
+  const authorization = `Basic ${encodedBase64Token}`
+  return axios({
+    url: url,
+    method: method,
+    headers: {
+      Authorization: authorization,
+    },
+    data: data,
+  }).then((resp) => {
+    return resp.data
+  })
+}
+
+export const checkStatus = (orderId) => {
+  const url = process.env.MIDTRANS_API_URL_V2 + orderId + '/status'
+
+  return queryPaymentGateway(url, 'get')
 }
 
 export const sendPaymentRequest = async (cost, orderId, data) => {
@@ -126,25 +155,10 @@ export const sendPaymentRequest = async (cost, orderId, data) => {
   }
 
   const url = process.env.MIDTRANS_API_URL_V2 + 'charge'
+  return queryPaymentGateway(url, 'post', axiosData)
+}
 
-  //   console.log(url, header)
-  const username = process.env.MIDTRANS_SERVER_KEY
-  const password = ''
-
-  const encodedBase64Token = Buffer.from(`${username}:${password}`).toString(
-    'base64',
-  )
-
-  const authorization = `Basic ${encodedBase64Token}`
-  console.log(url, authorization)
-  console.log(axiosData)
-
-  return axios({
-    url: url,
-    method: 'post',
-    headers: {
-      Authorization: authorization,
-    },
-    data: axiosData,
-  })
+export const addPaymentNotification = async (data) => {
+  const paymentData = new PaymentNotification(data)
+  return await paymentData.save()
 }

@@ -46,3 +46,7 @@ https://blog.tericcabrel.com/mongodb-replica-set-docker-compose/
 ### MIDTRANS payment simulation
 
 https://simulator.sandbox.midtrans.com/qris/index
+
+### Install and setup Ngrok for testing
+
+https://gist.github.com/wosephjeber/aa174fb851dfe87e644e

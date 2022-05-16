@@ -29,15 +29,19 @@ export const fetchServiceCategory = async (query = {}, options) => {
 }
 
 export const updateService = (req, res, next) => {
+  req.body.openingHours = convertOpeningHoursToJson(req.body.openingHours)
+
   const updateData = {
-    name: req.name,
-    description: req.description,
-    location: req.location,
-    photos: req.photos,
-    product: req.products,
-    productAddon: req.productAddon,
-    pricePerKm: req.pricePerKm,
+    name: req.body.name,
+    description: req.body.description,
+    location: req.body.location,
+    photos: req.body.photos,
+    product: req.body.products,
+    productAddon: req.body.productAddon,
+    pricePerKm: req.body.pricePerKm,
+    openingHours: req.body.openingHours,
   }
+
   return Service.updateOne(
     { _id: req.serviceId, userId: req.user.id },
     updateData,
@@ -76,13 +80,16 @@ export const addService = async (data, ownerId) => {
   const serviceData = new Service({
     userId: ownerId,
     storeId: storeId._id,
-    name: data.name,
-    description: data.description,
+    name: data.name.trim(),
+    description: data.description.trim(),
     products: data.products,
     productAddons: data.productAddons,
     photos: data.photos,
     pricePerKm: data.pricePerKm,
     category: data.category,
+    openingHours: data.openingHours,
+    negotiableHours: data.negotiableHours == 'true',
+    negotiableHoursRate: parseInt(data.negotiableHoursRate),
   })
 
   return await serviceData.save()

@@ -15,7 +15,10 @@ import {
   deleteStore,
 } from '../controller/store.ctrl.js'
 import { authArea } from '../middleware/auth.middleware.js'
-import { filterStorePublicFields } from '../validation/store.validation.js'
+import {
+  filterStorePublicFields,
+  convertOpeningHoursToJson,
+} from '../validation/store.validation.js'
 
 const __dirname = path.resolve()
 
@@ -31,23 +34,6 @@ passport.serializeUser(function (user, done) {
 passport.deserializeUser(function (obj, done) {
   done(null, obj)
 })
-
-const convertOpeningHoursToJson = (strOpeningHours) => {
-  if (typeof strOpeningHours != 'object') {
-    let openingHours = JSON.parse(strOpeningHours)
-
-    var result = {}
-    var keys = Object.keys(openingHours)
-    keys.forEach(function (item) {
-      openingHours[item].openingHour = parseInt(openingHours[item].openingHour)
-      openingHours[item].closingHour = parseInt(openingHours[item].closingHour)
-      openingHours[item].open = openingHours[item].open == 'true'
-      result[item] = openingHours[item]
-    })
-    return result
-  }
-  return strOpeningHours
-}
 
 /*********************/
 /* ROUTES START HERE */
@@ -144,7 +130,6 @@ const _createStore = async (req, res, next) => {
   debug.info('Create Store')
   req.body.openingHours = convertOpeningHoursToJson(req.body.openingHours)
 
-  console.log(req.body)
   try {
     req.body.ownerId = req.user._id
     console.log(req.file)
@@ -166,7 +151,9 @@ const _createStore = async (req, res, next) => {
       req.body.location = locationStrToArr(req.body.location)
     }
     const storeId = await createStore(req.body)
-    res.status(201).send({ _id: storeId._id })
+    res
+      .status(201)
+      .send({ message: 'Store successfuly created', id: storeId._id })
   } catch (err) {
     try {
       fs.unlinkSync(

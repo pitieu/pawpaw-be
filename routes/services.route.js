@@ -11,6 +11,7 @@ import {
   deleteService,
   listServiceCategories,
 } from '../controller/service.ctrl.js'
+import { convertOpeningHoursToJson } from '../validation/service.validation.js'
 import { authArea } from '../middleware/auth.middleware.js'
 import { uploadServices } from '../utils/multer.utils.js'
 import debug from '../utils/logger.js'
@@ -45,6 +46,8 @@ const _createService = async (req, res, next) => {
       })
       req.body.photos = photos
     }
+    req.body.openingHours = convertOpeningHoursToJson(req.body.openingHours)
+
     let products = []
     req.body.products.forEach((product) => {
       product.price = parseInt(product.price)
@@ -59,6 +62,8 @@ const _createService = async (req, res, next) => {
     })
     req.body.productAddons = productAddons
     req.body.pricePerKm = parseInt(req.body.pricePerKm)
+    req.body.negotiableHoursRate = parseInt(req.body.negotiableHoursRate)
+    req.body.negotiableHours = req.body.negotiableHours == 'true'
     const newService = await addService(req.body, req.user._id)
 
     res.status(201).send({ message: 'Service created', id: newService._id })
