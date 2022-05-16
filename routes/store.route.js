@@ -153,7 +153,7 @@ const _createStore = async (req, res, next) => {
     const storeId = await createStore(req.body)
     res
       .status(201)
-      .send({ message: 'Store successfuly created', id: storeId._id })
+      .send({ message: 'Store successfuly created', storeId: storeId._id })
   } catch (err) {
     try {
       fs.unlinkSync(

@@ -75,7 +75,9 @@ const _createService = async (req, res, next) => {
     console.log(req.user)
     const newService = await addService(req.body, req.user._id)
 
-    res.status(201).send({ message: 'Service created', id: newService._id })
+    res
+      .status(201)
+      .send({ message: 'Service created', serviceId: newService._id })
   } catch (err) {
     next(err)
   }
