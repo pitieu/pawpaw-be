@@ -22,7 +22,14 @@ export const orderSchema = new mongoose.Schema(
       required: true,
     },
     serviceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Service' },
-    paymentId: { type: String },
+    payment: {
+      status: {
+        type: String,
+        enum: ['pending', 'paid', 'canceled', 'expired', 'failed'],
+      },
+      statusReason: { type: String, default: '' },
+      paymentId: { type: String },
+    },
     conversationId: { type: String },
     status: {
       type: String,
@@ -35,8 +42,13 @@ export const orderSchema = new mongoose.Schema(
         'failed', // this status means the order failed to be executed due to dispute ?
       ],
     },
-    platformFee: { type: Number },
-    platformFeeType: { type: String, enum: ['percent', 'fixed'] },
+    statusReason: { type: String, default: '' },
+    platformFee: { type: Number, default: 2.5 },
+    platformFeeType: {
+      type: String,
+      enum: ['percent', 'fixed'],
+      default: 'percent',
+    },
     platformCost: { type: Number },
     transportCost: { type: Number },
     productsCost: { type: Number },
@@ -50,8 +62,10 @@ export const orderSchema = new mongoose.Schema(
     canceledAt: { type: String },
 
     bookingPeriod: {
-      start: { type: Date },
-      end: { type: Date },
+      start: { type: Date }, // used for timeframe: one_start_end_date_time
+      end: { type: Date }, // used for timeframe: one_start_end_date_time
+      dates: [{ type: Date }], // used for timeframe: multi_date_time
+      dateTime: { type: Date }, // used for timeframe: one_date_time
     },
     deliveryAddress: { type: [Number], index: '2d' },
     notes: { type: String },

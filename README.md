@@ -35,6 +35,8 @@ run `npm run dev`
 
 `./startdb.sh`
 
+When DB is empty and we run the nodejs api, the populate data will fail so it needs to rerun again. (only happens once)
+
 ### Stop Mongodb
 
 `docker stop mongo1`

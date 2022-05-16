@@ -6,6 +6,6 @@ export const generateHashedPassword = async (password) => {
   return hashedPassword
 }
 
-export const validatePassword = async (password, userPassword) => {
-  return await bcrypt.compare(password, userPassword)
+export const validatePassword = (password, userPassword) => {
+  return bcrypt.compare(password, userPassword)
 }

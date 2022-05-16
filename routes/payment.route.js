@@ -58,7 +58,7 @@ const _paymentNotification = async (req, res, next) => {
       if (req.body.status_code !== '200') {
         throw { error: req.body.status_message, status: 400 }
       }
-      // await updateOrderStatus(req.body)
+      const order = await updateOrderStatus(req.body)
     } catch (e) {
       debug.error('Failed update order status')
       console.log(e)

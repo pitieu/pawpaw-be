@@ -37,7 +37,10 @@ const _login = async (req, res, next) => {
     })
     if (!user) return res.status(400).send('Phone number not found')
 
-    const validPassword = validatePassword(req.query.password, user.password)
+    const validPassword = await validatePassword(
+      req.query.password,
+      user.password,
+    )
     if (!validPassword) return res.status(400).send('Invalid password')
 
     const userFiltered = {

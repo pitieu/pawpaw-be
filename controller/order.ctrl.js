@@ -5,6 +5,7 @@ import { fetchService } from '../controller/service.ctrl.js'
 import { createPaymentRequest } from '../controller/payment.ctrl.js'
 import { fetchUser } from '../controller/account.ctrl.js'
 import { locationStrToArr } from '../utils/location.utils.js'
+import { isDateValid } from '../utils/date.utils.js'
 import debug from '../utils/logger.js'
 
 export const listOrders = (query = {}, options) => {
@@ -19,11 +20,72 @@ export const listOrdersMerchant = (req, res, next) => {
   return listOrders({ providerId: req.user.id })
 }
 
+/** Validates and formats times correctly */
+export const validateOrderBookingDates = (timeframe, time) => {
+  const MINUTES_BETWEEN_DATES = 30 * 60 * 1000
+
+  if (timeframe == 'one_date_time') {
+    time.dateTime = new Date(parseInt(time.dateTime)).getTime()
+    if (
+      !isDateValid(time.dateTime) ||
+      time.dateTime + MINUTES_BETWEEN_DATES < new Date() // should be at least 30 minutes from now
+    ) {
+      throw { error: 'Start time is not valid', status: 400 }
+    }
+    return time
+  }
+
+  if (timeframe == 'multi_date_time') {
+    time.dates = time.dates
+      .map((a) => {
+        const formatted = parseInt(a).getTime()
+        if (!isDateValid(formatted)) {
+          throw { error: 'One of the dates is not valid', status: 400 }
+        }
+        return formatted
+      }) // convert to ctime
+      .sort((a, b) => a - b) // sort times ascending
+
+    // makes sure the gap between dates makes sense
+    if (time.dates.length > 1) {
+      for (let i = 1; i < time.dates.length - 1; i++) {
+        if (time.dates[i - 1] + MINUTES_BETWEEN_DATES > time.dates[i]) {
+          throw {
+            error: 'The gap between times has to be at least 30 minutes',
+            status: 400,
+          }
+        }
+      }
+    }
+    return time
+  }
+  if (timeframe == 'one_start_end_date_time') {
+    time.start = new Date(parseInt(time.start)).getTime()
+    time.end = new Date(parseInt(time.end)).getTime()
+
+    if (
+      !isDateValid(time.start) ||
+      time.start + MINUTES_BETWEEN_DATES < new Date()
+    ) {
+      throw { error: 'Start time is not valid', status: 400 }
+    }
+
+    if (
+      !isDateValid(time.start) ||
+      time.start + MINUTES_BETWEEN_DATES < new Date().getTime() ||
+      time.start + MINUTES_BETWEEN_DATES < time.end // gap between start and endtime has to be at least 30 minutes
+    ) {
+      throw { error: 'End time is not valid', status: 400 }
+    }
+    return time
+  }
+
+  throw { error: 'Invalid timeframe in service category', status: 400 }
+}
+
 export const createOrder = async (data, customerId) => {
   data.customer = await fetchUser({ _id: customerId })
   data.deliveryAddress = locationStrToArr(data.deliveryAddress)
-  data.bookingPeriodStart = new Date(parseInt(data.bookingPeriodStart))
-  data.bookingPeriodEnd = new Date(parseInt(data.bookingPeriodEnd))
 
   const serviceData = await fetchService(
     { _id: data.serviceId },
@@ -33,10 +95,15 @@ export const createOrder = async (data, customerId) => {
     .populate('storeId', 'location')
 
   if (!serviceData) throw { error: 'Could not find service', status: 400 }
-  if (!serviceData.category || !serviceData.category._id)
+  if (!serviceData.category || !serviceData.category?._id)
     throw { error: 'Could not find category', status: 400 }
-  if (!serviceData.storeId || !serviceData.storeId._id)
+  if (!serviceData.storeId || !serviceData.storeId?._id)
     throw { error: 'Could not find store', status: 400 }
+
+  data.time = validateOrderBookingDates(
+    serviceData.category.timeframe,
+    data.time,
+  )
 
   const orderId = generateUniqueOrderId()
 
@@ -56,7 +123,6 @@ export const createOrder = async (data, customerId) => {
     serviceData.category.platformFeeType,
   )
 
-  // todo: create payment request which will generate paymentId
   const payment = await createPaymentRequest(totalCost.total, orderId, data)
 
   const orderData = new Order({
@@ -64,7 +130,10 @@ export const createOrder = async (data, customerId) => {
     providerId: serviceData.userId,
     customerId: customerId,
     serviceId: data.serviceId,
-    paymentId: payment.id,
+    payment: {
+      status: 'pending',
+      paymentId: payment.transaction_id,
+    },
     status: 'requested',
     platformFee: serviceData.category.platformFee,
     platformFeeType: serviceData.category.platformFeeType,
@@ -73,10 +142,7 @@ export const createOrder = async (data, customerId) => {
     productsCost: productsCost,
     addonsCost: addonsCost,
     totalCost: totalCost.total,
-    bookingPeriod: {
-      start: data.bookingPeriodStart,
-      end: data.bookingPeriodEnd,
-    },
+    bookingPeriod: data.time,
     deliveryAddress: data.deliveryAddress,
     notes: data.notes,
     products: data.products,
@@ -149,60 +215,87 @@ export const calculateTotalCost = async (
 
 export const updateOrderStatus = async (data) => {
   const query = { orderId: data.order_id }
-  const order = await fetchOrder(query)
+  let order = await fetchOrder(query)
   if (!order) {
     throw { error: 'Could not find order from notification data', status: 400 }
   }
-  if (order.status == 'pending') {
-    await Order.updateOne(query, { status: 'paid' }, { new: true })
+
+  if (data.fraud_status != 'accept') {
+    // Todo: Fraud status used only in credit card???
+    // potentially would require to send midtransa cancel request because
+    // credit card might be in challenge status
+    return await Order.updateOne(
+      query,
+      { 'payment.status': 'failed', statusReason: 'Fraud status detected' },
+      { new: true },
+    )
+  }
+  if (order.status == 'pending' && data.transaction_status == 'settlement') {
+    const order = await Order.updateOne(
+      query,
+      { 'payment.status': 'paid', status: 'paid' },
+      { new: true },
+    )
+
+    // send notification to Service Provider to request to accept
+    // send notification to User saying payment received
+    return Promise.resolve(order)
+  }
+  if (data.transaction_status == 'cancel') {
+    const order = await Order.updateOne(
+      query,
+      { 'payment.status': 'canceled' },
+      { new: true },
+    )
+    // send notification that payment got canceled and that the user
+    // can choose a different payment method
+    return Promise.resolve(order)
+  }
+  if (data.transaction_status == 'expire') {
+    const order = await Order.updateOne(
+      query,
+      { 'payment.status': 'expired' },
+      { new: true },
+    )
+    // send notification to User saying payment expired and
+    // that he needs to request new one.
+    return Promise.resolve(order)
   }
   return Promise.resolve(order)
 }
 
-// exports.listOrders = (req, res, next) => {
-//   return getOrder({ customerId: req.user.id })
-// }
-
-// exports.getOrder = (req, res, next) => {
-//   return getOrder({ _id: req.orderId, customerId: req.user.id })
-// }
-
-// exports.getOrderMerchant = (req, res, next) => {
-//   return getOrder({ _id: req.orderId, providerId: req.user.id })
-// }
-
-// exports.cancelOrderMerchant = async (req, res, next) => {
-//   const orderData = await getOrder({
-//     _id: req.orderId,
-//     providerId: req.user.id,
-//   })
-//   if (
-//     orderData.status == 'accepted' ||
-//     orderData.status == 'ongoing' ||
-//     orderData.status == 'completed' ||
-//     orderData.status == 'canceled' ||
-//     orderData.status == 'failed'
-//   ) {
-//     throw Error('Can not cancel order.')
-//   } else if (orderData.status == 'booked' || orderData.status == 'paid') {
-//     if (orderData.status == 'paid') {
-//       // todo: issue refund/partial refund
-//     }
-//     const updateData = {
-//       status: 'canceled',
-//       canceledBy: req.user.id,
-//       canceledAt: new Date(),
-//     }
-//     await Order.updateOne(
-//       { _id: req.orderId, providerId: req.user.id },
-//       updateData,
-//     )
-//     // todo: add notification to customer about cancelation
-//     // todo: add cancelation message in messages between both parties
-//     // todo: remove unavailability from store account????
-//   }
-//   throw Error('Unknown status can not cancel order.')
-// }
+export const cancelOrderMerchant = async (data) => {
+  //   const orderData = await getOrder({
+  //     _id: req.orderId,
+  //     providerId: req.user.id,
+  //   })
+  //   if (
+  //     orderData.status == 'accepted' ||
+  //     orderData.status == 'ongoing' ||
+  //     orderData.status == 'completed' ||
+  //     orderData.status == 'canceled' ||
+  //     orderData.status == 'failed'
+  //   ) {
+  //     throw Error('Can not cancel order.')
+  //   } else if (orderData.status == 'booked' || orderData.status == 'paid') {
+  //     if (orderData.status == 'paid') {
+  //       // todo: issue refund/partial refund
+  //     }
+  //     const updateData = {
+  //       status: 'canceled',
+  //       canceledBy: req.user.id,
+  //       canceledAt: new Date(),
+  //     }
+  //     await Order.updateOne(
+  //       { _id: req.orderId, providerId: req.user.id },
+  //       updateData,
+  //     )
+  //     // todo: add notification to customer about cancelation
+  //     // todo: add cancelation message in messages between both parties
+  //     // todo: remove unavailability from store account????
+  //   }
+  //   throw Error('Unknown status can not cancel order.')
+}
 
 // exports.cancelOrder = async (req, res, next) => {
 //   const orderData = await getOrder({

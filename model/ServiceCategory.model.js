@@ -12,6 +12,7 @@ export const serviceCategorySchema = new mongoose.Schema(
       required: true,
       enum: ['percent', 'fixed'],
     },
+    timeframe: { type: String, required: true },
     deleted: { type: Boolean, default: false },
     deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     deletedAt: { type: Date },
