@@ -11,6 +11,7 @@ import {
   deleteService,
   listServiceCategories,
 } from '../controller/service.ctrl.js'
+import { fetchStore } from '../controller/store.ctrl.js'
 import { convertOpeningHoursToJson } from '../validation/service.validation.js'
 import { authArea } from '../middleware/auth.middleware.js'
 import { uploadServices } from '../utils/multer.utils.js'
@@ -33,6 +34,13 @@ passport.deserializeUser(function (obj, done) {
 
 const _createService = async (req, res, next) => {
   try {
+    const hasAStore = await fetchStore({ ownerId: req.user._id })
+    if (!hasAStore)
+      throw {
+        error: 'Needs to create a store before it can create a service',
+        status: 400,
+      }
+
     if (req.files) {
       let photos = []
       req.files.forEach((file) => {
@@ -64,6 +72,7 @@ const _createService = async (req, res, next) => {
     req.body.pricePerKm = parseInt(req.body.pricePerKm)
     req.body.negotiableHoursRate = parseInt(req.body.negotiableHoursRate)
     req.body.negotiableHours = req.body.negotiableHours == 'true'
+    console.log(req.user)
     const newService = await addService(req.body, req.user._id)
 
     res.status(201).send({ message: 'Service created', id: newService._id })

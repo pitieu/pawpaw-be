@@ -23,12 +23,13 @@ export const listOrdersMerchant = (req, res, next) => {
 /** Validates and formats times correctly */
 export const validateOrderBookingDates = (timeframe, time) => {
   const MINUTES_BETWEEN_DATES = 30 * 60 * 1000
+  const now = new Date().getTime()
 
   if (timeframe == 'one_date_time') {
     time.dateTime = new Date(parseInt(time.dateTime)).getTime()
     if (
       !isDateValid(time.dateTime) ||
-      time.dateTime + MINUTES_BETWEEN_DATES < new Date() // should be at least 30 minutes from now
+      time.dateTime - MINUTES_BETWEEN_DATES < now // should be at least 30 minutes from now
     ) {
       throw { error: 'Start time is not valid', status: 400 }
     }
@@ -63,23 +64,19 @@ export const validateOrderBookingDates = (timeframe, time) => {
     time.start = new Date(parseInt(time.start)).getTime()
     time.end = new Date(parseInt(time.end)).getTime()
 
-    if (
-      !isDateValid(time.start) ||
-      time.start + MINUTES_BETWEEN_DATES < new Date()
-    ) {
+    if (!isDateValid(time.start) || time.start - MINUTES_BETWEEN_DATES < now) {
       throw { error: 'Start time is not valid', status: 400 }
     }
 
     if (
-      !isDateValid(time.start) ||
-      time.start + MINUTES_BETWEEN_DATES < new Date().getTime() ||
-      time.start + MINUTES_BETWEEN_DATES < time.end // gap between start and endtime has to be at least 30 minutes
+      !isDateValid(time.end) ||
+      time.end < now ||
+      time.start + MINUTES_BETWEEN_DATES > time.end // gap between start and endtime has to be at least 30 minutes
     ) {
       throw { error: 'End time is not valid', status: 400 }
     }
     return time
   }
-
   throw { error: 'Invalid timeframe in service category', status: 400 }
 }
 
@@ -91,10 +88,12 @@ export const createOrder = async (data, customerId) => {
     { _id: data.serviceId },
     { 'photos.data': 0 },
   )
-    .populate('category', 'platformFee platformFeeType')
+    .populate('category', 'platformFee platformFeeType timeframe')
     .populate('storeId', 'location')
 
   if (!serviceData) throw { error: 'Could not find service', status: 400 }
+  if (serviceData.userId == customerId)
+    throw { error: 'Can not order from your own service', status: 400 }
   if (!serviceData.category || !serviceData.category?._id)
     throw { error: 'Could not find category', status: 400 }
   if (!serviceData.storeId || !serviceData.storeId?._id)

@@ -42,6 +42,7 @@ const product = {
 export const serviceSchema = new mongoose.Schema(
   {
     userId: {
+      //owner of the service
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,

@@ -76,7 +76,10 @@ export const addService = async (data, ownerId) => {
     }
 
   const storeId = await fetchStore({ ownerId: ownerId })
-
+  const category = await fetchServiceCategory({ key: data.category })
+  if (!category) {
+    throw { error: 'Invalid Category', status: 400 }
+  }
   const serviceData = new Service({
     userId: ownerId,
     storeId: storeId._id,
@@ -86,7 +89,7 @@ export const addService = async (data, ownerId) => {
     productAddons: data.productAddons,
     photos: data.photos,
     pricePerKm: data.pricePerKm,
-    category: data.category,
+    category: category._id,
     openingHours: data.openingHours,
     negotiableHours: data.negotiableHours == 'true',
     negotiableHoursRate: parseInt(data.negotiableHoursRate),
