@@ -56,10 +56,10 @@ export const fetchUser = async (query = {}, options) => {
 //   })
 // }
 
-export const phoneExists = async (phone, phoneExt) => {
+export const phoneExists = async (phone, phone_ext) => {
   const userByPhone = await User.findOne({
     phone: phone,
-    phoneExt: phoneExt,
+    phone_ext: phone_ext,
   })
   return userByPhone ? true : false
 }
@@ -72,7 +72,7 @@ export const usernameExists = async (username) => {
 export const createAccount = async (data) => {
   if (data.password != data.password2) {
     throw {
-      error: 'Password and Repeat Password do not match.',
+      error: 'password and repeat password do not match.',
       status: 400,
     }
   }
@@ -84,13 +84,13 @@ export const createAccount = async (data) => {
     }
   }
 
-  const phoneExist = await phoneExists(data.phone, data.phoneExt)
+  const phoneExist = await phoneExists(data.phone, data.phone_ext)
   if (phoneExist) {
-    throw { error: 'Phone number already exists', status: 400 }
+    throw { error: 'phone number already exists', status: 400 }
   }
   const usernameExist = await usernameExists(data.username)
   if (usernameExist) {
-    throw { error: 'Username already exists', status: 400 }
+    throw { error: 'username already exists', status: 400 }
   }
   const hashedPassword = await generateHashedPassword(data.password)
 
@@ -98,7 +98,7 @@ export const createAccount = async (data) => {
     username: data.username,
     location: data.location,
     phone: data.phone,
-    phoneExt: data.phoneExt,
+    phone_ext: data.phone_ext,
     password: hashedPassword,
   })
   const savedUser = await userData.save()

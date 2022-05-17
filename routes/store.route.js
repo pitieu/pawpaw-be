@@ -43,7 +43,7 @@ const _fetchStoreService = async (req, res, next) => {
   debug.info("Fetch Store's services")
   try {
     let services = await listServices(
-      { storeId: req.params.storeId },
+      { store_id: req.params.store_id },
       { 'photos.data': 0 },
     )
     res.status(200).send(services)
@@ -55,7 +55,7 @@ const _fetchOwnStore = async (req, res, next) => {
   debug.info('Fetch own Store')
 
   try {
-    let query = { ownerId: req.user._id }
+    let query = { owner_id: req.user._id }
     let storeData = await fetchStore(query)
     storeData.photo = {}
     storeData = filterStorePublicFields(storeData)
@@ -70,7 +70,7 @@ const _deleteStore = async (req, res, next) => {
 
   try {
     await deleteStore(req.user._id)
-    res.status(200).send({ message: 'Store successfully deleted.' })
+    res.status(200).send({ message: 'store deleted successfully', status: 200 })
   } catch (err) {
     next(err)
   }
@@ -80,7 +80,7 @@ const _fetchSpecificStore = async (req, res, next) => {
   debug.info('Fetch Store')
 
   try {
-    let query = { id: req.query.storeId }
+    let query = { id: req.query.store_id }
     let storeData = await fetchStore(query)
     storeData.photo = {}
     storeData = filterStorePublicFields(storeData)
@@ -93,19 +93,19 @@ const _fetchSpecificStore = async (req, res, next) => {
 const _updateOwnStore = async (req, res, next) => {
   debug.info('Update Store')
   try {
-    req.body.ownerId = req.user._id
-    req.body.openingHours = convertOpeningHoursToJson(req.body.openingHours)
+    req.body.owner_id = req.user._id
+    req.body.opening_hours = convertOpeningHoursToJson(req.body.opening_hours)
 
     // console.log(req)
-    console.log(req.body)
-    console.log(req.file)
+    // console.log(req.body)
+    // console.log(req.file)
     if (req.file) {
       // req.body.photo = req.file.filename
       req.body.photo = {
         data: fs.readFileSync(
           path.join(__dirname + '/uploads/profile/' + req.file.filename),
         ),
-        contentType: 'image/png',
+        content_type: 'image/png',
       }
     }
     if (req.body.location) {
@@ -113,7 +113,7 @@ const _updateOwnStore = async (req, res, next) => {
     }
 
     await updateStore(req.body)
-    res.status(200).send({ message: 'Store updated successfully' })
+    res.status(200).send({ message: 'store updated successfully', status: 200 })
   } catch (err) {
     try {
       fs.unlinkSync(
@@ -128,11 +128,11 @@ const _updateOwnStore = async (req, res, next) => {
 
 const _createStore = async (req, res, next) => {
   debug.info('Create Store')
-  req.body.openingHours = convertOpeningHoursToJson(req.body.openingHours)
+  req.body.opening_hours = convertOpeningHoursToJson(req.body.opening_hours)
 
   try {
-    req.body.ownerId = req.user._id
-    console.log(req.file)
+    req.body.owner_id = req.user._id
+    // console.log(req.file)
     if (req.file) {
       if (!req.file.filename)
         throw { error: 'File was not uploaded correctly', status: 400 }
@@ -141,19 +141,21 @@ const _createStore = async (req, res, next) => {
         data: fs.readFileSync(
           path.join(__dirname + '/uploads/profile/' + req.file.filename),
         ),
-        contentType: req.file.mimetype,
+        content_type: req.file.mimetype,
       }
     }
-    if (!req.body.ownerId) {
+    if (!req.body.owner_id) {
       throw new Error('User id not valid')
     }
     if (req.body.location) {
       req.body.location = locationStrToArr(req.body.location)
     }
     const storeId = await createStore(req.body)
-    res
-      .status(201)
-      .send({ message: 'Store successfuly created', storeId: storeId._id })
+    res.status(201).send({
+      message: 'store created successfully',
+      store_id: storeId._id,
+      status: 201,
+    })
   } catch (err) {
     try {
       fs.unlinkSync(
@@ -166,10 +168,10 @@ const _createStore = async (req, res, next) => {
   }
 }
 
-router.get('/:storeId/services', _fetchStoreService)
+router.get('/:store_id/services', _fetchStoreService)
 router.get('/', authArea, _fetchOwnStore)
 router.delete('/', authArea, _deleteStore)
-router.get('/:storeId', _fetchSpecificStore)
+router.get('/:store_id', _fetchSpecificStore)
 router.put('/', authArea, uploadProfile.single('photo'), _updateOwnStore)
 router.post('/', authArea, uploadProfile.single('photo'), _createStore)
 

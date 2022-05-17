@@ -2,36 +2,36 @@ import mongoose from 'mongoose'
 import uniqueValidator from 'mongoose-unique-validator'
 
 const product = {
-  productId: { type: String },
+  product_id: { type: String },
   price: { type: Number },
   amount: { type: Number },
 }
 
 export const orderSchema = new mongoose.Schema(
   {
-    orderId: { type: String, unique: true, required: true },
+    order_id: { type: String, unique: true, required: true },
     // service seller
-    providerId: {
+    provider_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-    customerId: {
+    customer_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-    serviceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Service' },
+    service_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Service' },
     payment: {
       status: {
         type: String,
         enum: ['pending', 'paid', 'canceled', 'expired', 'failed'],
         required: true,
       },
-      statusReason: { type: String, default: '' },
-      paymentId: { type: String, required: true },
+      status_reason: { type: String, default: '' },
+      payment_id: { type: String, required: true },
     },
-    conversationId: { type: String },
+    conversation_id: { type: String },
     status: {
       type: String,
       enum: [
@@ -44,36 +44,36 @@ export const orderSchema = new mongoose.Schema(
       ],
       required: true,
     },
-    statusReason: { type: String, default: '' },
-    platformFee: { type: Number, default: 2.5 },
-    platformFeeType: {
+    status_reason: { type: String, default: '' },
+    platform_fee: { type: Number, default: 2.5 },
+    platform_fee_type: {
       type: String,
       enum: ['percent', 'fixed'],
       default: 'percent',
     },
-    platformCost: { type: Number, required: true },
-    transportCost: { type: Number, required: true },
-    productsCost: { type: Number, required: true },
-    addonsCost: { type: Number, required: true },
-    totalCost: { type: Number, required: true },
+    platform_cost: { type: Number, required: true },
+    transport_cost: { type: Number, required: true },
+    products_cost: { type: Number, required: true },
+    addons_cost: { type: Number, required: true },
+    total_cost: { type: Number, required: true },
 
-    cancelReason: { type: String },
-    canceledBy: {
+    cancel_reason: { type: String },
+    canceled_by: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-    canceledAt: { type: String },
+    canceled_at: { type: String },
 
-    bookingPeriod: {
+    booking_period: {
       start: { type: Date }, // used for timeframe: one_start_end_date_time
       end: { type: Date }, // used for timeframe: one_start_end_date_time
       dates: [{ type: Date }], // used for timeframe: multi_date_time
-      dateTime: { type: Date }, // used for timeframe: one_date_time
+      date_time: { type: Date }, // used for timeframe: one_date_time
     },
-    deliveryAddress: { type: [Number], index: '2d' },
+    delivery_address: { type: [Number], index: '2d' },
     notes: { type: String },
     products: [product],
-    productAddons: [product],
+    product_addons: [product],
   },
   { timestamps: true },
 )

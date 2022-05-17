@@ -3,8 +3,8 @@ export default [
     name: 'Pet Sitting',
     description: '',
     key: 'pet_sitting',
-    platformFee: 2,
-    platformFeeType: 'percent',
+    platform_fee: 2,
+    platform_fee_type: 'percent',
     timeframe: 'one_start_end_date_time',
     // start and end date + time
 
@@ -17,8 +17,8 @@ export default [
     name: 'Grooming',
     description: '',
     key: 'grooming',
-    platformFee: 2,
-    platformFeeType: 'percent',
+    platform_fee: 2,
+    platform_fee_type: 'percent',
     timeframe: 'one_date_time',
     // one date + time
   },
@@ -26,8 +26,8 @@ export default [
     name: 'Pet Hotel',
     description: '',
     key: 'pet_hotel',
-    platformFee: 2,
-    platformFeeType: 'percent',
+    platform_fee: 2,
+    platform_fee_type: 'percent',
     timeframe: 'one_start_end_date_time',
     // start and end date + time
 
@@ -40,8 +40,8 @@ export default [
     name: 'Pet Walking',
     description: '',
     key: 'pet_walking',
-    platformFee: 2,
-    platformFeeType: 'percent',
+    platform_fee: 2,
+    platform_fee_type: 'percent',
     timeframe: 'multi_date_time',
     // multiple date + time
   },
@@ -49,8 +49,8 @@ export default [
     name: 'Veterinarian',
     description: '',
     key: 'veterinarian',
-    platformFee: 2,
-    platformFeeType: 'percent',
+    platform_fee: 2,
+    platform_fee_type: 'percent',
     timeframe: 'one_date_time',
     // one date + time
   },
@@ -58,8 +58,8 @@ export default [
     name: 'Pet Training',
     description: '',
     key: 'pet_training',
-    platformFee: 2,
-    platformFeeType: 'percent',
+    platform_fee: 2,
+    platform_fee_type: 'percent',
     timeframe: 'one_date_time',
     // one date + time?
   },
@@ -67,8 +67,8 @@ export default [
     name: 'Funeral',
     description: '',
     key: 'funeral',
-    platformFee: 2,
-    platformFeeType: 'percent',
+    platform_fee: 2,
+    platform_fee_type: 'percent',
     timeframe: 'one_date_time',
     // one date + time?
   },

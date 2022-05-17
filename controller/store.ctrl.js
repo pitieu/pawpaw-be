@@ -14,19 +14,19 @@ export const fetchStore = async (query = {}, options) => {
 export const updateStore = async (newData) => {
   newData.name = newData.name.trim()
 
-  if (!newData.ownerId) throw { error: 'OwnerId is required', status: 400 }
+  if (!newData.owner_id) throw { error: 'owner_id is required', status: 400 }
 
-  const nameExists = await StoreNameExists(newData.name, newData.ownerId)
-  if (nameExists) throw { error: 'Store name already exists', status: 400 }
+  const nameExists = await StoreNameExists(newData.name, newData.owner_id)
+  if (nameExists) throw { error: 'store name already exists', status: 400 }
 
   const sanitizedData = {
     name: newData.name,
     photo: newData.photo,
     location: newData.location,
     open: newData.open,
-    reopenDate: newData.reopenDate,
+    reopen_date: newData.reopen_date,
     unavailable: newData.unavailable,
-    openingHours: newData.openingHours,
+    opening_hours: newData.opening_hours,
   }
 
   const storeValidation = updateStoreValidation(sanitizedData)
@@ -38,15 +38,15 @@ export const updateStore = async (newData) => {
   }
 
   const storeData = await Store.findOneAndUpdate(
-    { ownerId: newData.ownerId, deleted: false },
+    { owner_id: newData.owner_id, deleted: false },
     sanitizedData,
   )
   return storeData
 }
 
-export const storeExists = async (storeId) => {
+export const storeExists = async (ownerId) => {
   const storeByOwnerId = await fetchStore({
-    ownerId: storeId,
+    owner_id: ownerId,
   })
   return storeByOwnerId ? true : false
 }
@@ -54,18 +54,18 @@ export const storeExists = async (storeId) => {
 export const StoreNameExists = async (name, ownerId) => {
   const storeByName = await fetchStore({
     name: name.trim(),
-    ownerId: { $ne: ownerId },
+    owner_id: { $ne: ownerId },
   })
   return storeByName ? true : false
 }
 
 export const createStore = async (data) => {
   data.name = data.name.trim()
-  const storeExist = await storeExists(data.ownerId)
-  if (storeExist) throw { error: 'User already has a store', status: 400 }
+  const storeExist = await storeExists(data.owner_id)
+  if (storeExist) throw { error: 'user already has a store', status: 400 }
 
-  const nameExists = await StoreNameExists(data.name, data.ownerId)
-  if (nameExists) throw { error: 'Store name already exists', status: 400 }
+  const nameExists = await StoreNameExists(data.name, data.owner_id)
+  if (nameExists) throw { error: 'store name already exists', status: 400 }
 
   const storeValidation = createStoreValidation(data)
   if (storeValidation.error) {
@@ -77,7 +77,7 @@ export const createStore = async (data) => {
 
   try {
     const storeData = new Store({
-      ownerId: data.ownerId,
+      owner_id: data.owner_id,
       name: data.name,
       photo: data.photo,
       location: data.location,
@@ -85,15 +85,15 @@ export const createStore = async (data) => {
     return await storeData.save()
   } catch (e) {
     console.log(e)
-    throw { error: 'Failed to create store', status: 400 }
+    throw { error: 'failed to create store', status: 400 }
   }
 }
 
 export const deleteStore = async (ownerId) => {
-  if (!ownerId) throw { error: 'OwnerId is required', status: 400 }
+  if (!ownerId) throw { error: 'owner_id is required', status: 400 }
   // Todo: delete services also
   return await Store.findOneAndUpdate(
-    { ownerId: ownerId, deleted: false },
+    { owner_id: ownerId, deleted: false },
     { deleted: true, deletedBy: ownerId, deletedAt: new Date() },
     { new: true },
   )

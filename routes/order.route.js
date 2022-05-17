@@ -9,28 +9,28 @@ const router = express.Router()
 
 const _createOrder = async (req, res, next) => {
   try {
-    if (!req.body.serviceId)
-      throw { error: 'ServiceId is required', status: 400 }
+    if (!req.body.service_id)
+      throw { error: 'service_id is required', status: 400 }
 
     const order = await createOrder(req.body, req.user._id)
 
     res
       .status(201)
-      .send({ message: 'Order successfully created', orderId: order.orderId })
+      .send({ message: 'order created successfully', order_id: order.order_id })
   } catch (err) {
     next(err)
   }
 }
 const _approveOrder = async (req, res, next) => {
   try {
-    const order = await approveOrder(req.params.orderId, req.user._id)
-    res.status(200).send({ message: 'Order approved sucessfully' })
+    const order = await approveOrder(req.params.order_id, req.user._id)
+    res.status(200).send({ message: 'order approved sucessfully' })
   } catch (err) {
     next(err)
   }
 }
 
 router.post('/', authArea, _createOrder)
-router.post('/:orderId/approve', authArea, _approveOrder)
+router.post('/:order_id/approve', authArea, _approveOrder)
 
 export default router

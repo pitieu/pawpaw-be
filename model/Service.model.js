@@ -4,7 +4,7 @@ import uniqueValidator from 'mongoose-unique-validator'
 const photo = {
   filename: { type: String },
   data: { type: Buffer },
-  contentType: { type: String },
+  content_type: { type: String },
 }
 
 // const reviews = {
@@ -32,7 +32,7 @@ const product = {
   // order: {type: Number},
   // default: {type: Boolean},
 
-  bookingPeriod: {
+  booking_period: {
     start: { type: String },
     end: { type: String },
   },
@@ -41,13 +41,13 @@ const product = {
 
 export const serviceSchema = new mongoose.Schema(
   {
-    userId: {
+    user_id: {
       //owner of the service
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-    storeId: {
+    store_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Store',
       required: true,
@@ -65,49 +65,49 @@ export const serviceSchema = new mongoose.Schema(
     // reviews: [reviews],
     // like: { type: Boolean }, // todo: move it to it's own table
     products: [product],
-    productAddons: [product],
-    pricePerKm: { type: Number }, // transportation cost per km
-    openingHours: {
+    product_addons: [product],
+    price_per_km: { type: Number }, // transportation cost per km
+    opening_hours: {
       mon: {
-        openingHour: { type: Number, min: 0, max: 23, default: 8 },
-        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        opening_hour: { type: Number, min: 0, max: 23, default: 8 },
+        closing_hour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
       tue: {
-        openingHour: { type: Number, min: 0, max: 23, default: 8 },
-        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        opening_hour: { type: Number, min: 0, max: 23, default: 8 },
+        closing_hour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
       wed: {
-        openingHour: { type: Number, min: 0, max: 23, default: 8 },
-        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        opening_hour: { type: Number, min: 0, max: 23, default: 8 },
+        closing_hour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
       thu: {
-        openingHour: { type: Number, min: 0, max: 23, default: 8 },
-        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        opening_hour: { type: Number, min: 0, max: 23, default: 8 },
+        closing_hour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
       fri: {
-        openingHour: { type: Number, min: 0, max: 23, default: 8 },
-        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        opening_hour: { type: Number, min: 0, max: 23, default: 8 },
+        closing_hour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
       sat: {
-        openingHour: { type: Number, min: 0, max: 23, default: 8 },
-        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        opening_hour: { type: Number, min: 0, max: 23, default: 8 },
+        closing_hour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
       sun: {
-        openingHour: { type: Number, min: 0, max: 23, default: 8 },
-        closingHour: { type: Number, min: 0, max: 23, default: 18 },
+        opening_hour: { type: Number, min: 0, max: 23, default: 8 },
+        closing_hour: { type: Number, min: 0, max: 23, default: 18 },
         open: { type: Boolean, default: true },
       },
     },
-    negotiableHours: { type: Boolean }, // negotiable Opening / Closing hours
-    negotiableHoursRate: { type: Number }, // price per additional hour over the open/close time
-    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    deletedAt: { type: String },
+    negotiable_hours: { type: Boolean }, // negotiable Opening / Closing hours
+    negotiable_hours_rate: { type: Number }, // price per additional hour over the open/close time
+    deleted_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    deleted_at: { type: String },
     deleted: { type: Boolean, default: false },
   },
   { timestamps: true },

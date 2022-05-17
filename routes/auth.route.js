@@ -20,7 +20,7 @@ let refreshTokens = []
 const _register = async (req, res, next) => {
   try {
     const userId = await createAccount(req.body)
-    res.status(201).send({ _id: userId._id })
+    res.status(201).send({ user_id: userId._id })
   } catch (err) {
     next(err)
   }
@@ -33,21 +33,21 @@ const _login = async (req, res, next) => {
 
     const user = await User.findOne({
       phone: req.query.phone,
-      phoneExt: req.query.phoneExt,
+      phone_ext: req.query.phone_ext,
     })
-    if (!user) return res.status(400).send('Phone number not found')
+    if (!user) throw { error: 'Phone number not found', status: 400 }
 
     const validPassword = await validatePassword(
       req.query.password,
       user.password,
     )
-    if (!validPassword) return res.status(400).send('Invalid password')
+    if (!validPassword) throw { error: 'invalid password', status: 400 }
 
     const userFiltered = {
       _id: user._id,
       username: user.username,
       phone: user.phone,
-      phoneExt: user.phoneExt,
+      phone_ext: user.phone_ext,
     }
 
     const accessToken = signJWT(
@@ -71,9 +71,11 @@ const _login = async (req, res, next) => {
     })
 
     refreshTokens.push(refreshToken)
-    res
-      .header('auth-token', accessToken)
-      .json({ accessToken: accessToken, refreshToken: refreshToken })
+    res.header('auth-token', accessToken).status(200).json({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      status: 200,
+    })
   } catch (err) {
     console.log(err)
     next(err)
@@ -87,9 +89,10 @@ const _token = (req, res) => {
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
     if (err) return res.sendStatus(403)
     const accessToken = generateAccessToken({ username: user.name })
-    res.json({ accessToken: accessToken })
+    res.status(200).json({ access_token: accessToken, status: 200 })
   })
 }
+
 const _logout = (req, res) => {
   res.cookie('accessToken', '', {
     maxAge: 0,

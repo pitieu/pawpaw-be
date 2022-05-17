@@ -2,7 +2,7 @@ import Joi from 'joi'
 
 export const getStoreValidation = (data) => {
   const schema = Joi.object({
-    storeId: Joi.string(),
+    store_id: Joi.string(),
   })
   return schema.validate(data)
 }
@@ -13,46 +13,46 @@ export const updateStoreValidation = (data) => {
     photo: Joi.object({
       filename: Joi.string(),
       data: Joi.binary(),
-      contentType: Joi.string().valid('image/png', 'image/jpeg', 'image/jpg'),
+      content_type: Joi.string().valid('image/png', 'image/jpeg', 'image/jpg'),
     }),
     location: Joi.array().items(Joi.number()),
     open: Joi.boolean(),
-    reopenDate: Joi.date(),
+    reopen_date: Joi.date(),
     unavailable: Joi.array().items(Joi.date()),
-    openingHours: Joi.object({
+    opening_hours: Joi.object({
       mon: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       tue: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       wed: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       thu: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       fri: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       sat: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       sun: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
     }),
@@ -62,48 +62,48 @@ export const updateStoreValidation = (data) => {
 
 export const createStoreValidation = (data) => {
   const schema = Joi.object({
-    ownerId: Joi.string().required(),
+    owner_id: Joi.string().required(),
     name: Joi.string().min(3).required(),
     photo: Joi.object({
       filename: Joi.string(),
       data: Joi.binary(),
-      contentType: Joi.string(),
+      content_type: Joi.string(),
     }),
     location: Joi.array().items(Joi.number()),
-    openingHours: Joi.object({
+    opening_hours: Joi.object({
       mon: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       tue: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       wed: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       thu: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       fri: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       sat: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       sun: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
     }),
@@ -114,12 +114,12 @@ export const createStoreValidation = (data) => {
 export const filterStorePublicFields = (data) => {
   return {
     _id: data._id,
-    ownerId: data.ownerId,
+    owner_id: data.owner_id,
     name: data.name,
     location: data.locations,
     unavailable: data.unavailable,
     photo: data.photo,
-    openingHours: data.openingHours,
+    opening_hours: data.opening_hours,
   }
 }
 
@@ -130,8 +130,12 @@ export const convertOpeningHoursToJson = (strOpeningHours) => {
     var result = {}
     var keys = Object.keys(openingHours)
     keys.forEach(function (item) {
-      openingHours[item].openingHour = parseInt(openingHours[item].openingHour)
-      openingHours[item].closingHour = parseInt(openingHours[item].closingHour)
+      openingHours[item].opening_hour = parseInt(
+        openingHours[item].opening_hour,
+      )
+      openingHours[item].closing_hour = parseInt(
+        openingHours[item].closing_hour,
+      )
       openingHours[item].open = openingHours[item].open == 'true'
       result[item] = openingHours[item]
     })

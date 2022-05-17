@@ -10,7 +10,11 @@ export const addServiceValidation = (data) => {
       Joi.object({
         filename: Joi.string().min(3),
         data: Joi.binary(),
-        contentType: Joi.string().valid('image/png', 'image/jpeg', 'image/jpg'),
+        content_type: Joi.string().valid(
+          'image/png',
+          'image/jpeg',
+          'image/jpg',
+        ),
       }),
     ),
     products: Joi.array().items(
@@ -25,7 +29,7 @@ export const addServiceValidation = (data) => {
         selectable: Joi.bool(),
       }),
     ),
-    productAddons: Joi.array().items(
+    product_addons: Joi.array().items(
       Joi.object({
         name: Joi.string().min(3),
         description: Joi.string(),
@@ -37,46 +41,46 @@ export const addServiceValidation = (data) => {
         selectable: Joi.bool(),
       }),
     ),
-    pricePerKm: Joi.number(),
-    openingHours: Joi.object({
+    price_per_km: Joi.number(),
+    opening_hours: Joi.object({
       mon: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       tue: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       wed: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       thu: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       fri: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       sat: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
       sun: Joi.object({
-        openingHour: Joi.number(),
-        closingHour: Joi.number(),
+        opening_hour: Joi.number(),
+        closing_hour: Joi.number(),
         open: Joi.boolean(),
       }),
     }),
-    negotiableHours: Joi.boolean(),
-    negotiableHoursRate: Joi.number(),
+    negotiable_hours: Joi.boolean(),
+    negotiable_hours_rate: Joi.number(),
   })
 
   return schema.validate(data)

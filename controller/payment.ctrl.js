@@ -10,7 +10,7 @@ export const createPaymentRequest = async (cost, orderId, data) => {
   const response = await sendPaymentRequest(cost, orderId, data)
   // debug.info(response)
   if (!response) {
-    throw { error: 'Failed to create payment request' }
+    throw { error: 'failed to create payment request' }
   }
   const paymentData = new Payment(response)
   const savedData = await paymentData.save()
@@ -36,7 +36,7 @@ export const queryPaymentGateway = (url, method, data = {}) => {
   })
 }
 
-export const checkStatus = (orderId) => {
+export const checkStatus = async (orderId) => {
   const url = process.env.MIDTRANS_API_URL_V2 + orderId + '/status'
 
   return queryPaymentGateway(url, 'get').then((res) => res.data)
@@ -61,7 +61,7 @@ export const sendPaymentRequest = async (cost, orderId, data) => {
     ].indexOf(data.payment.type) < 0
   ) {
     throw {
-      error: 'Payment method "' + data.payment.type + '"not allowed',
+      error: 'payment method "' + data.payment.type + '" not allowed',
       status: 400,
     }
   }
@@ -75,7 +75,7 @@ export const sendPaymentRequest = async (cost, orderId, data) => {
   }
 
   if (data.payment.type === 'credit_card') {
-    throw { error: 'Credit Card not implemented yet', status: 400 }
+    throw { error: 'credit card not implemented yet', status: 400 }
   }
   // Mandiri's virtual account
   if (data.payment.type === 'echannel') {
@@ -84,7 +84,7 @@ export const sendPaymentRequest = async (cost, orderId, data) => {
   // Virtual accounts
   if (data.payment.type === 'bank_transfer') {
     if (['permata', 'bca', 'bni', 'bri'].indexOf(data.payment.bank) < 0) {
-      throw { error: 'Invalid bank in payment', status: 400 }
+      throw { error: 'invalid bank in payment', status: 400 }
     }
     let va = data.customer.phone
     if (data.payment.bank === 'permata') {
@@ -149,7 +149,7 @@ export const sendPaymentRequest = async (cost, orderId, data) => {
   // alfamart, indomaret
   if (data.payment.type === 'cstore') {
     if (['Indomaret', 'alfamart'].indexOf(data.payment.store) < 0) {
-      throw { error: "Only 'Indomaret' and 'alfamart' allowed", status: 400 }
+      throw { error: "only 'Indomaret' and 'alfamart' allowed", status: 400 }
     }
     axiosData.cstore.store = data.payment.store
     // potentially add message field for indomaret to appear in POS and
@@ -180,21 +180,21 @@ export const cancelPayment = async (orderId) => {
   const newPayment = await paymentData.save()
 
   const update = await Order.updateOne(
-    { orderId: orderId, status: 'pending' },
+    { order_id: orderId, status: 'pending' },
     { 'payment.status': 'canceled' },
     { new: true },
   )
 
   if (update.modifiedCount == 0)
-    throw { error: 'No order was modified', status: 400 }
+    throw { error: 'no order was modified', status: 400 }
 
   return update
 }
 
 export const requestNewPayment = async (orderId, payment, customerId) => {
-  const order = await fetchOrder({ orderId: orderId, customerId: customerId })
+  const order = await fetchOrder({ order_id: orderId, customer_id: customerId })
   if (!order) {
-    throw { error: 'Could not find order', status: 400 }
+    throw { error: 'could not find order', status: 400 }
   }
   // cancel Payment doesn't need to succeed in order to create a new payment later
   try {
@@ -203,18 +203,18 @@ export const requestNewPayment = async (orderId, payment, customerId) => {
     debug.error(e)
   }
   const response = await sendPaymentRequest(
-    order.totalCost,
-    order.orderId,
+    order.total_cost,
+    order.order_id,
     payment,
   )
   if (response.status_code == '200' || response.status_code == '201') {
     const paymentData = new Payment(response)
     const newPayment = await paymentData.save()
     return Order.updateOne(
-      { orderId: orderId, status: 'pending', customerId: customerId },
+      { order_id: orderId, status: 'pending', customer_id: customerId },
       {
         'payment.status': 'pending',
-        'payment.paymentId': response.transaction_id,
+        'payment.payment_id': response.transaction_id,
       },
       { new: true },
     )

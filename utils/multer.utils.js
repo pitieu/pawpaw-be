@@ -3,7 +3,7 @@ import multer from 'multer'
 const storage = (storagePath) => {
   return multer.diskStorage({
     destination: (req, file, cb) => {
-      console.log('storagePath', storagePath)
+      // console.log('storagePath', storagePath)
       cb(null, storagePath)
     },
     filename: (req, file, cb) => {

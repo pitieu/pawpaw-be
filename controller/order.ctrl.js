@@ -17,7 +17,7 @@ export const fetchOrder = (query = {}, options) => {
 }
 
 export const listOrdersMerchant = (req, res, next) => {
-  return listOrders({ providerId: req.user.id })
+  return listOrders({ provider_id: req.user.id })
 }
 
 /** Validates and formats times correctly */
@@ -26,12 +26,12 @@ export const validateOrderBookingDates = (timeframe, time) => {
   const now = new Date().getTime()
 
   if (timeframe == 'one_date_time') {
-    time.dateTime = new Date(parseInt(time.dateTime)).getTime()
+    time.date_time = new Date(parseInt(time.date_time)).getTime()
     if (
-      !isDateValid(time.dateTime) ||
-      time.dateTime - MINUTES_BETWEEN_DATES < now // should be at least 30 minutes from now
+      !isDateValid(time.date_time) ||
+      time.date_time - MINUTES_BETWEEN_DATES < now // should be at least 30 minutes from now
     ) {
-      throw { error: 'Start time is not valid', status: 400 }
+      throw { error: 'start time is not valid', status: 400 }
     }
     return time
   }
@@ -41,7 +41,7 @@ export const validateOrderBookingDates = (timeframe, time) => {
       .map((a) => {
         const formatted = parseInt(a).getTime()
         if (!isDateValid(formatted)) {
-          throw { error: 'One of the dates is not valid', status: 400 }
+          throw { error: 'one of the dates is not valid', status: 400 }
         }
         return formatted
       }) // convert to ctime
@@ -52,7 +52,7 @@ export const validateOrderBookingDates = (timeframe, time) => {
       for (let i = 1; i < time.dates.length - 1; i++) {
         if (time.dates[i - 1] + MINUTES_BETWEEN_DATES > time.dates[i]) {
           throw {
-            error: 'The gap between times has to be at least 30 minutes',
+            error: 'the gap between times has to be at least 30 minutes',
             status: 400,
           }
         }
@@ -65,7 +65,7 @@ export const validateOrderBookingDates = (timeframe, time) => {
     time.end = new Date(parseInt(time.end)).getTime()
 
     if (!isDateValid(time.start) || time.start - MINUTES_BETWEEN_DATES < now) {
-      throw { error: 'Start time is not valid', status: 400 }
+      throw { error: 'start time is not valid', status: 400 }
     }
 
     if (
@@ -73,31 +73,31 @@ export const validateOrderBookingDates = (timeframe, time) => {
       time.end < now ||
       time.start + MINUTES_BETWEEN_DATES > time.end // gap between start and endtime has to be at least 30 minutes
     ) {
-      throw { error: 'End time is not valid', status: 400 }
+      throw { error: 'end time is not valid', status: 400 }
     }
     return time
   }
-  throw { error: 'Invalid timeframe in service category', status: 400 }
+  throw { error: 'invalid timeframe in service category', status: 400 }
 }
 
-export const createOrder = async (data, customerId) => {
-  data.customer = await fetchUser({ _id: customerId })
-  data.deliveryAddress = locationStrToArr(data.deliveryAddress)
+export const createOrder = async (data, customer_id) => {
+  data.customer = await fetchUser({ _id: customer_id })
+  data.delivery_address = locationStrToArr(data.delivery_address)
 
   const serviceData = await fetchService(
-    { _id: data.serviceId },
+    { _id: data.service_id },
     { 'photos.data': 0 },
   )
-    .populate('category', 'platformFee platformFeeType timeframe')
-    .populate('storeId', 'location')
+    .populate('category', 'platform_fee platform_fee_type timeframe')
+    .populate('store_id', 'location')
 
-  if (!serviceData) throw { error: 'Could not find service', status: 400 }
-  if (serviceData.userId == customerId)
-    throw { error: 'Can not order from your own service', status: 400 }
+  if (!serviceData) throw { error: 'could not find service', status: 400 }
+  if (serviceData.user_id == customer_id)
+    throw { error: 'can not order from your own service', status: 400 }
   if (!serviceData.category || !serviceData.category?._id)
-    throw { error: 'Could not find category', status: 400 }
-  if (!serviceData.storeId || !serviceData.storeId?._id)
-    throw { error: 'Could not find store', status: 400 }
+    throw { error: 'could not find category', status: 400 }
+  if (!serviceData.store_id || !serviceData.store_id?._id)
+    throw { error: 'could not find store', status: 400 }
 
   data.time = validateOrderBookingDates(
     serviceData.category.timeframe,
@@ -107,45 +107,45 @@ export const createOrder = async (data, customerId) => {
   const orderId = generateUniqueOrderId()
 
   const transportCost = await calculateTransportCost(
-    serviceData.pricePerKm,
-    serviceData.storeId.location,
-    data.deliveryAddress,
+    serviceData.price_per_km,
+    serviceData.store_id.location,
+    data.delivery_address,
   )
 
   const productsCost = await calculateProductsCost(data.products)
-  const addonsCost = await calculateProductsCost(data.productAddons)
+  const addonsCost = await calculateProductsCost(data.product_addons)
   const totalCost = await calculateTotalCost(
     productsCost,
     addonsCost,
     transportCost,
-    serviceData.category.platformFee,
-    serviceData.category.platformFeeType,
+    serviceData.category.platform_fee,
+    serviceData.category.platform_fee_type,
   )
 
   const payment = await createPaymentRequest(totalCost.total, orderId, data)
 
   const orderData = new Order({
-    orderId: orderId,
-    providerId: serviceData.userId,
-    customerId: customerId,
-    serviceId: data.serviceId,
+    order_id: orderId,
+    provider_id: serviceData.user_id,
+    customer_id: customer_id,
+    service_id: data.service_id,
     payment: {
       status: 'pending',
-      paymentId: payment.transaction_id,
+      payment_id: payment.transaction_id,
     },
     status: 'pending',
-    platformFee: serviceData.category.platformFee,
-    platformFeeType: serviceData.category.platformFeeType,
-    platformCost: totalCost.platformCost,
-    transportCost: transportCost,
-    productsCost: productsCost,
-    addonsCost: addonsCost,
-    totalCost: totalCost.total,
-    bookingPeriod: data.time,
-    deliveryAddress: data.deliveryAddress,
+    platform_fee: serviceData.category.platform_fee,
+    platform_fee_type: serviceData.category.platform_fee_type,
+    platform_cost: totalCost.platform_cost,
+    transport_cost: transportCost,
+    products_cost: productsCost,
+    addons_cost: addonsCost,
+    total_cost: totalCost.total,
+    booking_period: data.time,
+    delivery_address: data.delivery_address,
     notes: data.notes,
     products: data.products,
-    productAddons: data.productAddons,
+    product_addons: data.product_addons,
   })
   // console.log(orderData)
 
@@ -161,9 +161,8 @@ export const calculateTransportCost = async (
   address,
   destination,
 ) => {
-  console.log(pricePerKm)
   pricePerKm = parseInt(pricePerKm)
-  if (isNaN(pricePerKm)) throw { error: 'Invalid pricePerKm', status: 400 }
+  if (isNaN(pricePerKm)) throw { error: 'Invalid price per km', status: 400 }
 
   // Todo: Should try to get a measurement from address to destination using long lat
   // https://developers.google.com/maps/documentation/distance-matrix
@@ -180,7 +179,7 @@ export const calculateProductsCost = async (products) => {
     cost += parseInt(product.price) * parseInt(product.amount)
   })
   if (isNaN(cost))
-    throw { error: 'Invalid Product or Product amount', status: 400 }
+    throw { error: 'invalid product or product amount', status: 400 }
 
   return cost
 }
@@ -196,7 +195,7 @@ export const calculateTotalCost = async (
     parseInt(productsCost) + parseInt(addonsCost) + parseInt(transportCost)
   if (isNaN(total)) {
     debug.info(productsCost, addonsCost, transportCost)
-    throw { error: 'Invalid totalCost', status: 400 }
+    throw { error: 'invalid total_cost', status: 400 }
   }
 
   let platformCost = platformFee
@@ -209,14 +208,14 @@ export const calculateTotalCost = async (
   if (platformFee > 100000)
     throw { error: 'platform fee can not be bigger than 100.000', status: 400 }
 
-  return { total: total + platformFee, platformCost: platformCost }
+  return { total: total + platformFee, platform_cost: platformCost }
 }
 
 export const updateOrderStatus = async (data) => {
-  const query = { orderId: data.order_id }
+  const query = { order_id: data.order_id }
   let order = await fetchOrder(query)
   if (!order) {
-    throw { error: 'Could not find order from notification data', status: 400 }
+    throw { error: 'could not find order from notification data', status: 400 }
   }
 
   if (data.fraud_status != 'accept' || data.transaction_status == 'deny') {
@@ -229,7 +228,7 @@ export const updateOrderStatus = async (data) => {
     }
     return await Order.updateOne(
       query,
-      { 'payment.status': 'failed', statusReason: reason },
+      { 'payment.status': 'failed', status_reason: reason },
       { new: true },
     )
   }
@@ -270,7 +269,7 @@ export const updateOrderStatus = async (data) => {
 export const cancelOrderMerchant = async (data) => {
   //   const orderData = await getOrder({
   //     _id: req.orderId,
-  //     providerId: req.user.id,
+  //     provider_id: req.user.id,
   //   })
   //   if (
   //     orderData.status == 'accepted' ||
@@ -290,7 +289,7 @@ export const cancelOrderMerchant = async (data) => {
   //       canceledAt: new Date(),
   //     }
   //     await Order.updateOne(
-  //       { _id: req.orderId, providerId: req.user.id },
+  //       { _id: req.orderId, provider_id: req.user.id },
   //       updateData,
   //     )
   //     // todo: add notification to customer about cancelation
@@ -309,8 +308,8 @@ export const approveOrder = async (
   if (approve == 'accepted') {
     const orderData = await Order.updateOne(
       {
-        orderId: orderId,
-        providerId: providerId,
+        order_id: orderId,
+        provider_id: providerId,
         status: 'paid',
         'order.payment': 'paid',
       },
@@ -320,20 +319,20 @@ export const approveOrder = async (
   if (approve == 'cancel') {
     const orderData = await Order.updateOne(
       {
-        orderId: orderId,
-        providerId: providerId,
+        order_id: orderId,
+        provider_id: providerId,
         status: 'paid',
         'order.payment': 'paid',
       },
       {
         status: 'canceled',
-        canceledBy: providerId,
-        canceledAt: new Date(),
-        cancelReason: cancelReason,
+        canceled_by: providerId,
+        canceled_at: new Date(),
+        cancel_reason: cancelReason,
       },
     )
   }
-  throw { error: 'Unknown approve type.', status: 400 }
+  throw { error: 'unknown approve type', status: 400 }
 }
 
 // exports.cancelOrder = async (req, res, next) => {

@@ -90,7 +90,7 @@ const _ok = (req, res, next) => {
 
 const _checkStatus = async (req, res, next) => {
   try {
-    const status = await checkStatus(req.params.orderId)
+    const status = await checkStatus(req.params.order_id)
     debug.info(status)
     res.status(200).send(status)
   } catch (e) {
@@ -100,7 +100,7 @@ const _checkStatus = async (req, res, next) => {
 
 const _cancelPayment = async (req, res, next) => {
   try {
-    const status = await cancelPayment(req.params.orderId)
+    const status = await cancelPayment(req.params.order_id)
     debug.info(status)
     res.status(200).send(status)
   } catch (e) {
@@ -112,14 +112,14 @@ const _requestNewPayment = async (req, res, next) => {
   try {
     req.body.customer = req.user
     const payment = await requestNewPayment(
-      req.params.orderId,
+      req.params.order_id,
       req.body,
       req.user._id,
     )
     debug.info(payment)
     res.status(200).send({
-      message: 'New payment requested',
-      // paymentId: payment.payment.paymentId,
+      message: 'new payment requested successfully',
+      status: 200,
     })
   } catch (e) {
     next(e)
@@ -127,8 +127,8 @@ const _requestNewPayment = async (req, res, next) => {
 }
 
 if (process.env.NODEJS_ENV == 'development') {
-  router.get('/order/:orderId/status', _checkStatus)
-  router.post('/order/:orderId/cancel', _cancelPayment)
+  router.get('/order/:order_id/status', _checkStatus)
+  router.post('/order/:order_id/cancel', _cancelPayment)
 }
 router.get('/token', _getMidtransToken)
 router.post('/notifications/payment', _paymentNotification)
@@ -137,6 +137,6 @@ router.post('/notifications/payaccount', _payaccount)
 router.post('/notifications/redirect', _ok)
 router.post('/notifications/unfinishedredirect', _ok)
 router.post('/notifications/error', _ok)
-router.post('/order/:orderId', authArea, _requestNewPayment)
+router.post('/order/:order_id', authArea, _requestNewPayment)
 
 export default router

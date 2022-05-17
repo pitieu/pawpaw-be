@@ -34,10 +34,10 @@ passport.deserializeUser(function (obj, done) {
 
 const _createService = async (req, res, next) => {
   try {
-    const hasAStore = await fetchStore({ ownerId: req.user._id })
+    const hasAStore = await fetchStore({ owner_id: req.user._id })
     if (!hasAStore)
       throw {
-        error: 'Needs to create a store before it can create a service',
+        error: 'needs to create a store before it can create a service',
         status: 400,
       }
 
@@ -49,12 +49,12 @@ const _createService = async (req, res, next) => {
           data: fs.readFileSync(
             path.join(__dirname + '/uploads/services/' + file.filename),
           ),
-          contentType: file.mimetype,
+          content_type: file.mimetype,
         })
       })
       req.body.photos = photos
     }
-    req.body.openingHours = convertOpeningHoursToJson(req.body.openingHours)
+    req.body.opening_hours = convertOpeningHoursToJson(req.body.opening_hours)
 
     let products = []
     req.body.products.forEach((product) => {
@@ -64,20 +64,21 @@ const _createService = async (req, res, next) => {
     req.body.products = products
 
     let productAddons = []
-    req.body.productAddons.forEach((product) => {
+    req.body.product_addons.forEach((product) => {
       product.price = parseInt(product.price)
       productAddons.push(product)
     })
-    req.body.productAddons = productAddons
-    req.body.pricePerKm = parseInt(req.body.pricePerKm)
-    req.body.negotiableHoursRate = parseInt(req.body.negotiableHoursRate)
-    req.body.negotiableHours = req.body.negotiableHours == 'true'
-    console.log(req.user)
+    req.body.product_addons = productAddons
+    req.body.price_per_km = parseInt(req.body.price_per_km)
+    req.body.negotiable_hours_rate = parseInt(req.body.negotiable_hours_rate)
+    req.body.negotiable_hours = req.body.negotiable_hours == 'true'
     const newService = await addService(req.body, req.user._id)
 
-    res
-      .status(201)
-      .send({ message: 'Service created', serviceId: newService._id })
+    res.status(201).send({
+      status: 201,
+      message: 'service created successfully',
+      service_id: newService._id,
+    })
   } catch (err) {
     next(err)
   }
@@ -86,7 +87,7 @@ const _createService = async (req, res, next) => {
 const _fetchService = async (req, res, next) => {
   try {
     let service = await fetchService(
-      { _id: req.params.serviceId },
+      { _id: req.params.service_id },
       { 'photos.data': 0 },
     )
     res.status(200).send(service)
@@ -95,9 +96,9 @@ const _fetchService = async (req, res, next) => {
   }
 }
 
-const _fetchServiceCategories = async (req, res, next) => {
+const _listServiceCategories = async (req, res, next) => {
   try {
-    debug.info('Fetch Category')
+    debug.info('List Categories')
     const categories = await listServiceCategories({})
     res.status(200).send({ categories: categories })
   } catch (err) {
@@ -106,9 +107,9 @@ const _fetchServiceCategories = async (req, res, next) => {
 }
 
 router.post('/', authArea, uploadServices.array('photos', 5), _createService)
-router.get('/:serviceId/', _fetchService)
-router.put('/:serviceId', authArea, updateService)
-router.delete('/:serviceId', authArea, deleteService)
-router.get('/category/list', _fetchServiceCategories)
+router.get('/:service_id/', _fetchService)
+router.put('/:service_id', authArea, updateService)
+router.delete('/:service_id', authArea, deleteService)
+router.get('/category/list', _listServiceCategories)
 
 export default router

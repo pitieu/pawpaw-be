@@ -4,16 +4,16 @@ import { mongooseInstance } from '../mongodb/mongo.js'
 import debug from '../utils/logger.js'
 
 export const populateServiceCategory = async () => {
-  let session = await mongooseInstance.startSession()
-  session.startTransaction()
+  // let session = await mongooseInstance.startSession()
+  // session.startTransaction()
   try {
-    const count = await ServiceCategory.find({}, session).count()
+    const count = await ServiceCategory.find({}).count()
     if (!count) {
-      await ServiceCategory.insertMany(Categories, { session })
-      await session.commitTransaction()
+      await ServiceCategory.insertMany(Categories)
+      // await session.commitTransaction()
     }
   } catch (e) {
-    const abc = await session.abortTransaction()
+    // const abc = await session.abortTransaction()
     console.log(e)
   }
 }
