@@ -57,6 +57,7 @@ export const orderSchema = new mongoose.Schema(
     addonsCost: { type: Number, required: true },
     totalCost: { type: Number, required: true },
 
+    cancelReason: { type: String },
     canceledBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

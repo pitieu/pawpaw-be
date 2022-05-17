@@ -43,17 +43,17 @@ const _paymentNotification = async (req, res, next) => {
     //   throw { error: 'Signature does not match', status: 400 }
     // }
 
-    // const status = await checkStatus(req.body.order_id)
-    // if (
-    //   status.order_id !== req.body.order_id ||
-    //   status.gross_amount !== req.body.gross_amount ||
-    //   status.transaction_id !== req.body.transaction_id ||
-    //   status.fraud_status !== req.body.fraud_status ||
-    //   status.signature_key !== req.body.signature_key ||
-    //   status.transaction_status !== req.body.transaction_status
-    // ) {
-    //   throw { error: 'Some fields do not match with midtrans', status: 400 }
-    // }
+    const status = await checkStatus(req.body.order_id)
+    if (
+      status.order_id !== req.body.order_id ||
+      status.gross_amount !== req.body.gross_amount ||
+      status.transaction_id !== req.body.transaction_id ||
+      status.fraud_status !== req.body.fraud_status ||
+      status.signature_key !== req.body.signature_key ||
+      status.transaction_status !== req.body.transaction_status
+    ) {
+      throw { error: 'Forbidden', status: 403 }
+    }
 
     await addPaymentNotification(req.body)
     try {

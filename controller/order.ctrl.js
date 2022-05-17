@@ -219,13 +219,17 @@ export const updateOrderStatus = async (data) => {
     throw { error: 'Could not find order from notification data', status: 400 }
   }
 
-  if (data.fraud_status != 'accept') {
+  if (data.fraud_status != 'accept' || data.transaction_status == 'deny') {
     // Todo: Fraud status used only in credit card???
-    // potentially would require to send midtransa cancel request because
+    // potentially would require to send midtrans a cancel request because
     // credit card might be in challenge status
+    let reason = 'Fraud status detected'
+    if (data.transaction_status == 'deny') {
+      reason = data.status_message
+    }
     return await Order.updateOne(
       query,
-      { 'payment.status': 'failed', statusReason: 'Fraud status detected' },
+      { 'payment.status': 'failed', statusReason: reason },
       { new: true },
     )
   }
@@ -294,6 +298,42 @@ export const cancelOrderMerchant = async (data) => {
   //     // todo: remove unavailability from store account????
   //   }
   //   throw Error('Unknown status can not cancel order.')
+}
+
+export const approveOrder = async (
+  orderId,
+  approve,
+  providerId,
+  cancelReason,
+) => {
+  if (approve == 'accepted') {
+    const orderData = await Order.updateOne(
+      {
+        orderId: orderId,
+        providerId: providerId,
+        status: 'paid',
+        'order.payment': 'paid',
+      },
+      { status: 'accepted' },
+    )
+  }
+  if (approve == 'cancel') {
+    const orderData = await Order.updateOne(
+      {
+        orderId: orderId,
+        providerId: providerId,
+        status: 'paid',
+        'order.payment': 'paid',
+      },
+      {
+        status: 'canceled',
+        canceledBy: providerId,
+        canceledAt: new Date(),
+        cancelReason: cancelReason,
+      },
+    )
+  }
+  throw { error: 'Unknown approve type.', status: 400 }
 }
 
 // exports.cancelOrder = async (req, res, next) => {
