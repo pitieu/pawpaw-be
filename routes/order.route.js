@@ -14,9 +14,11 @@ const _createOrder = async (req, res, next) => {
 
     const order = await createOrder(req.body, req.user._id)
 
-    res
-      .status(201)
-      .send({ message: 'order created successfully', order_id: order.order_id })
+    res.status(201).send({
+      message: 'order created successfully',
+      order_id: order.order_id,
+      status: 201,
+    })
   } catch (err) {
     next(err)
   }
@@ -24,7 +26,7 @@ const _createOrder = async (req, res, next) => {
 const _approveOrder = async (req, res, next) => {
   try {
     const order = await approveOrder(req.params.order_id, req.user._id)
-    res.status(200).send({ message: 'order approved sucessfully' })
+    res.status(200).send({ message: 'order approved sucessfully', status: 200 })
   } catch (err) {
     next(err)
   }

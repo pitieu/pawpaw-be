@@ -203,7 +203,7 @@ export const calculateTotalCost = async (
     if (platformFee > 10)
       throw { error: 'platform fee can not be bigger than 10%', status: 400 }
     platformCost = Math.ceil(total * (platformFee / 100))
-    return { total: total + platformCost, platformCost: platformCost }
+    return { total: total + platformCost, platform_cost: platformCost }
   }
   if (platformFee > 100000)
     throw { error: 'platform fee can not be bigger than 100.000', status: 400 }
