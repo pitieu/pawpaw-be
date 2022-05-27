@@ -23,6 +23,11 @@ export const userSchema = new mongoose.Schema(
     deleted_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     deleted_at: { type: Date },
     deleted_reason: { type: String },
+    bank_details: {
+      fullname: { type: String },
+      account: { type: String },
+      bank_code: { type: String },
+    },
   },
   { timestamps: true },
 )

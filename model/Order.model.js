@@ -22,25 +22,53 @@ export const orderSchema = new mongoose.Schema(
       required: true,
     },
     service_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Service' },
+    conversation_id: { type: String },
     payment: {
+      // customer paying status
       status: {
         type: String,
-        enum: ['pending', 'paid', 'canceled', 'expired', 'failed'],
+        enum: [
+          'pending',
+          'paid',
+          'canceled',
+          'expired',
+          'failed',
+          'refunding',
+          'refunded',
+        ],
         required: true,
       },
       status_reason: { type: String, default: '' },
       payment_id: { type: String, required: true },
     },
-    conversation_id: { type: String },
+    payment_merchant: {
+      // merchant receiving money status
+      status: {
+        type: String,
+        enum: [
+          'pending',
+          'paid',
+          'canceled',
+          'expired',
+          'failed',
+          'refunding',
+          'refunded',
+        ],
+      },
+      status_reason: { type: String, default: '' },
+      payment_id: { type: String },
+      withdraw_allowed_after: { type: Date },
+    },
     status: {
       type: String,
       enum: [
-        'pending', // this status means it's waiting for payment
-        'paid', // this status means it's waiting for acceptance of service provider
-        'accepted', // this status means it's waiting for processing of service
-        'completed', // this status means the order was completed
-        'canceled', // this status means the order got canceled
-        'failed', // this status means the order failed to be executed due to dispute ?
+        'pending', // waiting for payment from customer
+        'paid', // waiting for acceptance/refusal of service provider
+        'accepted', // waiting for processing of service or customer completing
+        'pay_merchant', // order completed by customer/system but is waiting for merchant to be paid to fully complete
+        'completed', // order fully completed
+        'canceled', // order canceled
+        'failed', // order failed to be executed due to dispute? or other issue
       ],
       required: true,
     },

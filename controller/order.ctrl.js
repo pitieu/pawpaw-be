@@ -1,8 +1,9 @@
+import moment from 'moment'
 import { v4 } from 'uuid'
 
 import Order from '../model/Order.model.js'
 import { fetchService } from '../controller/service.ctrl.js'
-import { createPaymentRequest } from '../controller/payment.ctrl.js'
+import { createPaymentRequest, refund } from '../controller/payment.ctrl.js'
 import { fetchUser } from '../controller/account.ctrl.js'
 import { locationStrToArr } from '../utils/location.utils.js'
 import { isDateValid } from '../utils/date.utils.js'
@@ -266,39 +267,6 @@ export const updateOrderStatus = async (data) => {
   return Promise.resolve(order)
 }
 
-export const cancelOrderMerchant = async (data) => {
-  //   const orderData = await getOrder({
-  //     _id: req.orderId,
-  //     provider_id: req.user.id,
-  //   })
-  //   if (
-  //     orderData.status == 'accepted' ||
-  //     orderData.status == 'ongoing' ||
-  //     orderData.status == 'completed' ||
-  //     orderData.status == 'canceled' ||
-  //     orderData.status == 'failed'
-  //   ) {
-  //     throw Error('Can not cancel order.')
-  //   } else if (orderData.status == 'booked' || orderData.status == 'paid') {
-  //     if (orderData.status == 'paid') {
-  //       // todo: issue refund/partial refund
-  //     }
-  //     const updateData = {
-  //       status: 'canceled',
-  //       canceledBy: req.user.id,
-  //       canceledAt: new Date(),
-  //     }
-  //     await Order.updateOne(
-  //       { _id: req.orderId, provider_id: req.user.id },
-  //       updateData,
-  //     )
-  //     // todo: add notification to customer about cancelation
-  //     // todo: add cancelation message in messages between both parties
-  //     // todo: remove unavailability from store account????
-  //   }
-  //   throw Error('Unknown status can not cancel order.')
-}
-
 export const approveOrder = async (
   orderId,
   approve,
@@ -315,7 +283,14 @@ export const approveOrder = async (
       },
       { status: 'accepted' },
     )
+    if (orderData.modifiedCount > 0) {
+      // TODO: send notification to customer saying it got approved
+    } else {
+      throw { error: 'failed to approve order', status: 400 }
+    }
+    return orderData
   }
+
   if (approve == 'cancel') {
     const orderData = await Order.updateOne(
       {
@@ -331,36 +306,38 @@ export const approveOrder = async (
         cancel_reason: cancelReason,
       },
     )
+
+    if (orderData.modifiedCount > 0) {
+      // TODO: send notification to customer saying it got canceled
+    } else {
+      throw { error: 'failed to cancel order', status: 400 }
+    }
+
+    return orderData
   }
   throw { error: 'unknown approve type', status: 400 }
 }
 
-// exports.cancelOrder = async (req, res, next) => {
-//   const orderData = await getOrder({
-//     _id: req.orderId,
-//     customerId: req.user.id,
-//   })
-//   if (
-//     orderData.status == 'accepted' ||
-//     orderData.status == 'ongoing' ||
-//     orderData.status == 'completed' ||
-//     orderData.status == 'canceled' ||
-//     orderData.status == 'failed'
-//   ) {
-//     throw Error('Can not cancel order.')
-//   } else if (orderData.status == 'booked' || orderData.status == 'paid') {
-//     if (orderData.status == 'paid') {
-//       // todo: issue refund/partial refund
-//     }
-//     const updateData = {
-//       status: 'canceled',
-//       canceledBy: req.user.id,
-//       canceledAt: new Date(),
-//     }
-//     await Order.updateOne(
-//       { _id: req.orderId, customerId: req.user.id },
-//       updateData,
-//     )
-//   }
-//   throw Error('Unknown status can not cancel order.')
-// }
+export const completeOrder = async (orderId, customerId) => {
+  const orderData = await Order.updateOne(
+    {
+      order_id: orderId,
+      customer_id: customerId,
+      status: 'accepted',
+      'payment.status': 'paid',
+    },
+    {
+      status: 'pay_merchant',
+      'payment_merchant.status': 'pending',
+      'payment_merchant.withdraw_allowed_after': moment()
+        .add(1, 'days')
+        .toISOString(),
+    },
+  )
+  if (orderData.modifiedCount > 0) {
+    // await payMerchant(orderId)
+    return orderData
+  } else {
+    throw { error: 'failed to complete order', status: 400 }
+  }
+}

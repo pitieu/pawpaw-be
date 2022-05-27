@@ -3,11 +3,7 @@ import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 
 import debug from '../utils/logger.js'
-import { signJWT } from '../utils/jwt.utils.js'
-import User from '../model/User.model.js'
-
-import { loginValidation } from '../validation/auth.validation.js'
-import { validatePassword } from '../controller/auth.ctrl.js'
+import { login } from '../controller/auth.ctrl.js'
 import { createAccount } from '../controller/account.ctrl.js'
 import { authArea } from '../middleware/auth.middleware.js'
 
@@ -20,60 +16,53 @@ let refreshTokens = []
 const _register = async (req, res, next) => {
   try {
     const userId = await createAccount(req.body)
-    res.status(201).send({ user_id: userId._id })
-  } catch (err) {
-    next(err)
-  }
-}
-const _login = async (req, res, next) => {
-  try {
-    const validateLogin = loginValidation(req.query)
-    if (validateLogin.error)
-      return res.status(400).send(validateLogin.error.details[0].message)
 
-    const user = await User.findOne({
-      phone: req.query.phone,
-      phone_ext: req.query.phone_ext,
+    // login the account right away after registration
+    const tokens = await login({
+      phone: req.body.phone,
+      phone_ext: req.body.phone_ext,
+      password: req.body.password,
     })
-    if (!user) throw { error: 'Phone number not found', status: 400 }
 
-    const validPassword = await validatePassword(
-      req.query.password,
-      user.password,
-    )
-    if (!validPassword) throw { error: 'invalid password', status: 400 }
-
-    const userFiltered = {
-      _id: user._id,
-      username: user.username,
-      phone: user.phone,
-      phone_ext: user.phone_ext,
-    }
-
-    const accessToken = signJWT(
-      userFiltered,
-      process.env.ACCESS_TOKEN_SECRET,
-      '1y',
-    )
-    const refreshToken = signJWT(
-      userFiltered,
-      process.env.REFRESH_TOKEN_SECRET,
-      '1y',
-    )
-
-    res.cookie('accessToken', accessToken, {
+    res.cookie('accessToken', tokens.accessToken, {
       maxAge: 300000, // 5 minutes
       httpOnly: true,
     })
-    res.cookie('accessToken', accessToken, {
+    res.cookie('refreshToken', tokens.refreshToken, {
       maxAge: 3.154e10, // 1 year
       httpOnly: true,
     })
 
-    refreshTokens.push(refreshToken)
-    res.header('auth-token', accessToken).status(200).json({
-      access_token: accessToken,
-      refresh_token: refreshToken,
+    refreshTokens.push(tokens.refreshToken)
+    res.header('auth-token', tokens.accessToken).status(201).json({
+      access_token: tokens.accessToken,
+      refresh_token: tokens.refreshToken,
+      user_id: userId,
+      status: 201,
+    })
+  } catch (err) {
+    console.log(err)
+    next(err)
+  }
+}
+
+const _login = async (req, res, next) => {
+  try {
+    const tokens = await login(req.query)
+
+    res.cookie('accessToken', tokens.accessToken, {
+      maxAge: 300000, // 5 minutes
+      httpOnly: true,
+    })
+    res.cookie('refreshToken', tokens.refreshToken, {
+      maxAge: 3.154e10, // 1 year
+      httpOnly: true,
+    })
+
+    refreshTokens.push(tokens.refreshToken)
+    res.header('auth-token', tokens.accessToken).status(200).json({
+      access_token: tokens.accessToken,
+      refresh_token: tokens.refreshToken,
       status: 200,
     })
   } catch (err) {
@@ -98,7 +87,7 @@ const _logout = (req, res) => {
     maxAge: 0,
     httpOnly: true,
   })
-  res.cookie('accessToken', '', {
+  res.cookie('refreshToken', '', {
     maxAge: 0,
     httpOnly: true,
   })

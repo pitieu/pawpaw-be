@@ -221,3 +221,7 @@ export const requestNewPayment = async (orderId, payment, customerId) => {
   }
   throw { error: response.status_message, status: 400 }
 }
+
+export const refund = (orderId) => {}
+
+export const payMerchant = async (orderId) => {}

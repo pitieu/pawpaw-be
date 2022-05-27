@@ -1,14 +1,14 @@
 import dotenv from 'dotenv'
-import cors from 'cors'
 
 import { populateServiceCategory } from './initialization/ServiceCategory.js'
 import debug from './utils/logger.js'
-import app from './app.js'
+import { httpServer, httpsServer } from './app.js'
 import { initMongoose } from './mongodb/mongo.js'
 
 dotenv.config({ path: './.env' })
 
-const port = process.env.APP_PORT || 8081
+const portHttp = process.env.APP_HTTP_PORT || 8081
+const portHttps = process.env.APP_HTTPS_PORT || 8082
 
 initMongoose().then(() => {
   const initializeMissingData = async () => {
@@ -19,32 +19,12 @@ initMongoose().then(() => {
   } catch (e) {
     console.log(e)
   }
-  app.use(
-    cors({
-      credentials: true,
-      origin: 'http://localhost:3000',
-    }),
-  )
 
-  app.listen(port, async () => {
-    debug.log(`App running on port ${port}...`)
+  httpServer.listen(portHttp, async () => {
+    debug.log(`Http App running on port ${portHttp}...`)
   })
-
-  app.use(function (err, req, res, next) {
-    let message = ''
-    if (err) {
-      message = err.message || err.error
-    } else {
-      message = 'Unknown Error'
-    }
-    console.log(err)
-    debug.error(message)
-    res.status(err?.status || 500)
-    if (err.error) {
-      res.send(err)
-    } else {
-      res.send({ error: 'Woops, we encountered an error...' })
-    }
+  httpsServer.listen(portHttps, async () => {
+    debug.log(`Https App running on port ${portHttps}...`)
   })
 
   process.on('uncaughtException', (err) => {
