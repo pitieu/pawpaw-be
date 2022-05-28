@@ -69,7 +69,7 @@ app.use('/api/v1/store', storeRouter)
 // app.use('/api/v1/account', accountRouter);
 app.use('/api/v1/services', serviceRouter)
 app.use('/api/v1/order', orderRouter)
-app.use('/api/v1/account', accountRouter)
+app.use('/api/v1/accounts', accountRouter)
 
 if (process.env.NODEJS_ENV === 'development') {
   app.use('/api/v1/payment', paymentRouter)

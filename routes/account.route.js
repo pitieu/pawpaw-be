@@ -5,8 +5,15 @@ import path from 'path'
 
 import debug from '../utils/logger.js'
 import { authArea } from '../middleware/auth.middleware.js'
-import { fetchUser } from '../controller/account.ctrl.js'
-import { filterUserPublicFields } from '../validation/account.validation.js'
+import {
+  fetchUser,
+  fetchAccounts,
+  selectAccount,
+} from '../controller/account.ctrl.js'
+import {
+  filterUserPublicFields,
+  filterAccountPublicFields,
+} from '../validation/account.validation.js'
 
 const __dirname = path.resolve()
 
@@ -29,6 +36,7 @@ const _fetchUser = async (req, res, next) => {
       phone: req.user.phone,
       phone_ext: req.user.phone_ext,
     })
+
     // debug.info(filterUserPublicFields(user))
     res.status(200).send(filterUserPublicFields(user))
   } catch (err) {
@@ -36,7 +44,41 @@ const _fetchUser = async (req, res, next) => {
     next(err)
   }
 }
+const _fetchAccounts = async (req, res, next) => {
+  try {
+    let accounts = await fetchAccounts({
+      phone: req.user.phone,
+      phone_ext: req.user.phone_ext,
+    })
 
-router.get('/', authArea, _fetchUser)
+    accounts = accounts.map((account) => filterAccountPublicFields(account))
+    debug.info(accounts)
+    res.status(200).send(accounts)
+  } catch (err) {
+    console.log(err)
+    next(err)
+  }
+}
+
+const _selectAccount = async (req, res, next) => {
+  try {
+    console.log(req.params)
+    let accounts = await selectAccount({
+      phone: req.user.phone,
+      phone_ext: req.user.phone_ext,
+      user_id: req.params.user_id,
+    })
+
+    res
+      .status(200)
+      .send({ message: 'successfully selected account', status: 200 })
+  } catch (err) {
+    next(err)
+  }
+}
+
+router.get('/fetch', authArea, _fetchUser)
+router.put('/:user_id/select', authArea, _selectAccount)
+router.get('/', authArea, _fetchAccounts)
 
 export default router

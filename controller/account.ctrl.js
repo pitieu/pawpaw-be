@@ -3,6 +3,7 @@ import User from '../model/User.model.js'
 import { registrationValidation } from '../validation/auth.validation.js'
 import { generateHashedPassword } from './auth.ctrl.js'
 import debug from '../utils/logger.js'
+import { mongooseInstance } from '../mongodb/mongo.js'
 
 export const fetchUser = async (query = {}, options) => {
   query.deleted = false
@@ -10,6 +11,39 @@ export const fetchUser = async (query = {}, options) => {
   debug.info(query)
   const user = await User.findOne(query, options).lean()
   return user
+}
+
+export const fetchAccounts = async (query = {}, options) => {
+  query.deleted = false
+  // query.selected_account = true
+  // debug.info(query)
+  const user = await User.find(query, options).lean()
+  return user
+}
+
+export const selectAccount = async (data) => {
+  let session = await mongooseInstance.startSession()
+  session.startTransaction()
+  try {
+    await User.updateMany(
+      { phone: data.phone, phone_ext: data.phone_ext },
+      { selected_account: false },
+      { session },
+    )
+    const selectTrue = await User.updateOne(
+      { phone: data.phone, phone_ext: data.phone_ext, _id: data.user_id },
+      { selected_account: true },
+      { session },
+    )
+
+    if (selectTrue.matchedCount != 1) {
+      throw { error: 'failed to select account', status: 400 }
+    }
+    await session.commitTransaction()
+  } catch (e) {
+    await session.abortTransaction()
+    throw e
+  }
 }
 
 // export const updateUser = (req, res, next) => {
@@ -64,6 +98,7 @@ export const accountsCount = async (phone, phone_ext) => {
   const userByPhone = await User.count({
     phone: phone,
     phone_ext: phone_ext,
+    deleted: false,
   })
   return userByPhone
 }
