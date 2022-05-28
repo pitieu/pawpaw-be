@@ -19,6 +19,7 @@ export const userSchema = new mongoose.Schema(
     },
     geo: { type: [Number], index: '2d' }, // geolocation long,lat
     phone_validated: { type: Boolean },
+    selected_account: { type: Boolean, default: true },
     deleted: { type: Boolean, default: false },
     deleted_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     deleted_at: { type: Date },

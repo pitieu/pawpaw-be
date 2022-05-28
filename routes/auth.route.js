@@ -16,6 +16,7 @@ let refreshTokens = []
 
 const _register = async (req, res, next) => {
   try {
+    // TODO: add mongoose transaction to prevent creation of account and fail store creation
     const userId = await createAccount(req.body)
 
     const store = await createStore(userId)

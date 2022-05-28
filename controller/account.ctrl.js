@@ -71,6 +71,7 @@ export const usernameExists = async (username) => {
 }
 
 export const createAccount = async (data) => {
+  // TODO: prevent user to create account if he is in a ban list
   const validateRegister = registrationValidation(data)
   if (validateRegister.error) {
     throw {
@@ -97,11 +98,18 @@ export const createAccount = async (data) => {
   }
   const hashedPassword = await generateHashedPassword(data.password)
 
+  // set all owned account as not selected
+  await User.updateMany(
+    { phone: data.phone, phone_ext: data.phone_ext },
+    { selected_account: false },
+  )
+
   const userData = new User({
     username: data.username,
     phone: data.phone,
     phone_ext: data.phone_ext,
     password: hashedPassword,
+    selected_account: true,
   })
   const savedUser = await userData.save()
   return savedUser._id
