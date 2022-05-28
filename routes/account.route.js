@@ -27,7 +27,7 @@ const _fetchUser = async (req, res, next) => {
   console.log('fetch User')
   try {
     const user = await fetchUser({ _id: req.user._id })
-    debug.info(filterUserPublicFields(user))
+    // debug.info(filterUserPublicFields(user))
     res.status(200).send(filterUserPublicFields(user))
   } catch (err) {
     console.log(err)
