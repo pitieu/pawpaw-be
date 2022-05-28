@@ -8,14 +8,6 @@ export const storeSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-    name: { type: String, required: true },
-    photo: {
-      filename: { type: String },
-      data: { type: Buffer },
-      content_type: { type: String },
-    },
-    // reviews: [reviews],
-    location: { type: [Number], index: '2dsphere' },
     open: { type: Boolean },
     reopen_date: { type: Date },
     opening_hours: {
@@ -55,8 +47,8 @@ export const storeSchema = new mongoose.Schema(
         open: { type: Boolean, default: true },
       },
     },
-    negotiable_hours: { type: Boolean }, // negotiable Opening / Closing hours
-    negotiable_hours_rate: { type: Number }, // price per additional hour over the open/close time
+    negotiable_hours: { type: Boolean, default: true }, // negotiable Opening / Closing hours
+    negotiable_hours_rate: { type: Number, default: 0 }, // price per additional hour over the open/close time
     // dates where the business is unavailable
     // this could be through order or manual input.
     unavailable: [{ type: Date }],

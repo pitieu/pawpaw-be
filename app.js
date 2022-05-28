@@ -5,7 +5,7 @@ import https from 'https'
 import path from 'path'
 import session from 'express-session'
 import dotenv from 'dotenv'
-import cors from 'cors'
+// import cors from 'cors'
 import fs from 'fs'
 
 // import winston from 'winston'
@@ -17,6 +17,7 @@ import serviceRouter from './routes/services.route.js'
 import storeRouter from './routes/store.route.js'
 import orderRouter from './routes/order.route.js'
 import paymentRouter from './routes/payment.route.js'
+import accountRouter from './routes/account.route.js'
 
 var privateKey = fs.readFileSync('config/sslcert/key.pem')
 var certificate = fs.readFileSync('config/sslcert/cert.pem')
@@ -68,6 +69,7 @@ app.use('/api/v1/store', storeRouter)
 // app.use('/api/v1/account', accountRouter);
 app.use('/api/v1/services', serviceRouter)
 app.use('/api/v1/order', orderRouter)
+app.use('/api/v1/account', accountRouter)
 
 if (process.env.NODEJS_ENV === 'development') {
   app.use('/api/v1/payment', paymentRouter)

@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import debug from '../utils/logger.js'
 import { login } from '../controller/auth.ctrl.js'
 import { createAccount } from '../controller/account.ctrl.js'
+import { createStore } from '../controller/store.ctrl.js'
 import { authArea } from '../middleware/auth.middleware.js'
 
 dotenv.config({ path: './.env' })
@@ -17,6 +18,8 @@ const _register = async (req, res, next) => {
   try {
     const userId = await createAccount(req.body)
 
+    const store = await createStore(userId)
+
     // login the account right away after registration
     const tokens = await login({
       phone: req.body.phone,
@@ -28,6 +31,7 @@ const _register = async (req, res, next) => {
       maxAge: 300000, // 5 minutes
       httpOnly: true,
     })
+
     res.cookie('refreshToken', tokens.refreshToken, {
       maxAge: 3.154e10, // 1 year
       httpOnly: true,
@@ -41,7 +45,6 @@ const _register = async (req, res, next) => {
       status: 201,
     })
   } catch (err) {
-    console.log(err)
     next(err)
   }
 }

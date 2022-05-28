@@ -1,7 +1,4 @@
-import {
-  createStoreValidation,
-  updateStoreValidation,
-} from '../validation/store.validation.js'
+import { updateStoreValidation } from '../validation/store.validation.js'
 import Store from '../model/Store.model.js'
 import debug from '../utils/logger.js'
 
@@ -12,17 +9,9 @@ export const fetchStore = async (query = {}, options) => {
 }
 
 export const updateStore = async (newData) => {
-  newData.name = newData.name.trim()
-
   if (!newData.owner_id) throw { error: 'owner_id is required', status: 400 }
 
-  const nameExists = await StoreNameExists(newData.name, newData.owner_id)
-  if (nameExists) throw { error: 'store name already exists', status: 400 }
-
   const sanitizedData = {
-    name: newData.name,
-    photo: newData.photo,
-    location: newData.location,
     open: newData.open,
     reopen_date: newData.reopen_date,
     unavailable: newData.unavailable,
@@ -51,36 +40,13 @@ export const storeExists = async (ownerId) => {
   return storeByOwnerId ? true : false
 }
 
-export const StoreNameExists = async (name, ownerId) => {
-  const storeByName = await fetchStore({
-    name: name.trim(),
-    owner_id: { $ne: ownerId },
-  })
-  return storeByName ? true : false
-}
-
-export const createStore = async (data) => {
-  data.name = data.name.trim()
-  const storeExist = await storeExists(data.owner_id)
+export const createStore = async (ownerId) => {
+  const storeExist = await storeExists(ownerId)
   if (storeExist) throw { error: 'user already has a store', status: 400 }
-
-  const nameExists = await StoreNameExists(data.name, data.owner_id)
-  if (nameExists) throw { error: 'store name already exists', status: 400 }
-
-  const storeValidation = createStoreValidation(data)
-  if (storeValidation.error) {
-    throw {
-      error: storeValidation.error.details[0].message,
-      status: 400,
-    }
-  }
 
   try {
     const storeData = new Store({
-      owner_id: data.owner_id,
-      name: data.name,
-      photo: data.photo,
-      location: data.location,
+      owner_id: ownerId,
     })
     return await storeData.save()
   } catch (e) {

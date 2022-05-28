@@ -57,12 +57,12 @@ export const fetchUser = async (query = {}, options) => {
 //   })
 // }
 
-export const phoneExists = async (phone, phone_ext) => {
-  const userByPhone = await User.findOne({
+export const accountsCount = async (phone, phone_ext) => {
+  const userByPhone = await User.count({
     phone: phone,
     phone_ext: phone_ext,
   })
-  return userByPhone ? true : false
+  return userByPhone
 }
 
 export const usernameExists = async (username) => {
@@ -82,10 +82,15 @@ export const createAccount = async (data) => {
     }
   }
 
-  const phoneExist = await phoneExists(data.phone, data.phone_ext)
-  if (phoneExist) {
-    throw { error: 'phone number already exists', status: 400, error_code: 103 }
+  const acctCount = await accountsCount(data.phone, data.phone_ext)
+  if (acctCount >= 5) {
+    throw {
+      error: 'maximum of 5 accounts reached per phone number',
+      status: 400,
+      error_code: 103,
+    }
   }
+
   const usernameExist = await usernameExists(data.username)
   if (usernameExist) {
     throw { error: 'username already exists', status: 400, error_code: 104 }
@@ -94,7 +99,6 @@ export const createAccount = async (data) => {
 
   const userData = new User({
     username: data.username,
-    location: data.location,
     phone: data.phone,
     phone_ext: data.phone_ext,
     password: hashedPassword,

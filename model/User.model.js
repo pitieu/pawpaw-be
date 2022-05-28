@@ -3,11 +3,11 @@ import mongoose from 'mongoose'
 export const userSchema = new mongoose.Schema(
   {
     fullname: { type: String },
-    username: { type: String },
+    username: { type: String, lowercase: true },
     password: { type: String },
-    website: { type: String },
+    website: { type: String, lowercase: true },
     biography: { type: String },
-    gender: { type: Number }, //0 male, 1 female, 2 others
+    gender: { type: Number }, // 0 male, 1 female, 2 others
     location: { type: String },
     phone: { type: String, required: true },
     phone_ext: { type: String, required: true },
