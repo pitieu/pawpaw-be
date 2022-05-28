@@ -2,9 +2,12 @@ import Order from '../model/Order.model.js'
 import User from '../model/User.model.js'
 import { registrationValidation } from '../validation/auth.validation.js'
 import { generateHashedPassword } from './auth.ctrl.js'
+import debug from '../utils/logger.js'
 
 export const fetchUser = async (query = {}, options) => {
   query.deleted = false
+  query.selected_account = true
+  debug.info(query)
   const user = await User.findOne(query, options).lean()
   return user
 }

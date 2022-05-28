@@ -25,7 +25,10 @@ passport.deserializeUser(function (obj, done) {
 
 const _fetchUser = async (req, res, next) => {
   try {
-    const user = await fetchUser({ _id: req.user._id })
+    const user = await fetchUser({
+      phone: req.user.phone,
+      phone_ext: req.user.phone_ext,
+    })
     // debug.info(filterUserPublicFields(user))
     res.status(200).send(filterUserPublicFields(user))
   } catch (err) {

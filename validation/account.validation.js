@@ -11,7 +11,7 @@ export const filterUserPublicFields = (data) => {
     gender: data.gender,
     location: data.location,
     email: data.email,
-    profile: data.photo.filename,
+    profile: data.photo?.filename,
     geo: data.geo,
     phone_validated: data.phone_validated,
     bank_details: data.bank_details,
