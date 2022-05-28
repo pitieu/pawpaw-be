@@ -26,12 +26,17 @@ export const selectAccount = async (data) => {
   session.startTransaction()
   try {
     await User.updateMany(
-      { phone: data.phone, phone_ext: data.phone_ext },
+      { phone: data.phone, phone_ext: data.phone_ext, deleted: false },
       { selected_account: false },
       { session },
     )
     const selectTrue = await User.updateOne(
-      { phone: data.phone, phone_ext: data.phone_ext, _id: data.user_id },
+      {
+        phone: data.phone,
+        phone_ext: data.phone_ext,
+        _id: data.user_id,
+        deleted: false,
+      },
       { selected_account: true },
       { session },
     )
