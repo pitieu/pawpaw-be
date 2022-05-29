@@ -6,12 +6,6 @@ import { signJWT } from '../utils/jwt.utils.js'
 
 import { loginValidation } from '../validation/auth.validation.js'
 
-export const generateHashedPassword = async (password) => {
-  const salt = await bcrypt.genSalt(10)
-  const hashedPassword = await bcrypt.hash(password, salt)
-  return hashedPassword
-}
-
 export const validatePassword = (password, userPassword) => {
   return bcrypt.compare(password, userPassword)
 }
@@ -27,10 +21,14 @@ export const login = async (data) => {
       error_code: 100,
     }
 
-  const user = await User.findOne({
-    phone: data.phone,
-    phone_ext: data.phone_ext,
-  })
+  let user = await User.findOne(
+    {
+      phone: data.phone,
+      phone_ext: data.phone_ext,
+      deleted: false,
+    },
+    { _id: 1, phone: 1, phone_ext: 1, accounts: 1, password: 1 },
+  ).lean()
 
   if (!user)
     throw {
@@ -38,7 +36,6 @@ export const login = async (data) => {
       status: 400,
       error_code: 101,
     }
-
   const validPassword = await validatePassword(data.password, user.password)
   if (!validPassword)
     throw {
@@ -47,22 +44,12 @@ export const login = async (data) => {
       error_code: 102,
     }
 
-  const userFiltered = {
-    _id: user._id,
-    username: user.username,
+  const payload = {
     phone: user.phone,
     phone_ext: user.phone_ext,
   }
-
-  const accessToken = signJWT(
-    userFiltered,
-    process.env.ACCESS_TOKEN_SECRET,
-    '1y',
-  )
-  const refreshToken = signJWT(
-    userFiltered,
-    process.env.REFRESH_TOKEN_SECRET,
-    '1y',
-  )
-  return { accessToken: accessToken, refreshToken: refreshToken }
+  delete user.password
+  const accessToken = signJWT(payload, process.env.ACCESS_TOKEN_SECRET, '1y')
+  const refreshToken = signJWT(payload, process.env.REFRESH_TOKEN_SECRET, '1y')
+  return { accessToken: accessToken, refreshToken: refreshToken, user: user }
 }

@@ -3,6 +3,11 @@ import uniqueValidator from 'mongoose-unique-validator'
 
 export const storeSchema = new mongoose.Schema(
   {
+    account_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
     owner_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

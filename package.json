@@ -7,13 +7,14 @@
     "babel-version": "babel --version",
     "dev": "nodemon --exec babel-node server.js",
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --watchAll"
   },
   "type": "module",
+  "target": "esnext",
+  "module": "commonjs",
   "author": "Marcio Marques Soares",
   "license": "MIT",
   "dependencies": {
-    "@babel/core": "^7.8.4",
     "ansi-styles": "^6.1.0",
     "axios": "^0.27.2",
     "babel-cli": "^6.26.0",
@@ -44,6 +45,17 @@
     "winston": "^3.7.2"
   },
   "devDependencies": {
+    "@babel/cli": "^7.17.10",
+    "@babel/core": "^7.18.2",
+    "@babel/plugin-transform-modules-commonjs": "^7.18.2",
+    "@babel/preset-env": "^7.18.2",
+    "@shelf/jest-mongodb": "^2.2.2",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^28.1.0",
+    "babel-polyfill": "^6.26.0",
+    "chai": "^4.3.6",
+    "chai-jest-mocks": "^1.2.4",
+    "jest": "^28.1.0",
     "prettier": "2.6.2"
   }
 }

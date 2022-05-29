@@ -33,22 +33,18 @@ export const updateStore = async (newData) => {
   return storeData
 }
 
-export const storeExists = async (ownerId) => {
-  const storeByOwnerId = await fetchStore({
-    owner_id: ownerId,
-  })
-  return storeByOwnerId ? true : false
-}
-
-export const createStore = async (ownerId) => {
-  const storeExist = await storeExists(ownerId)
-  if (storeExist) throw { error: 'user already has a store', status: 400 }
-
+export const createStore = async (ownerId, accountId, session) => {
   try {
-    const storeData = new Store({
-      owner_id: ownerId,
-    })
-    return await storeData.save()
+    const res = await Store.insertMany(
+      [
+        {
+          owner_id: ownerId,
+          account_id: accountId,
+        },
+      ],
+      { session: session },
+    )
+    return res[0]
   } catch (e) {
     console.log(e)
     throw { error: 'failed to create store', status: 400 }

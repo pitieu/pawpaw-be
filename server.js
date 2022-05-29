@@ -37,11 +37,13 @@ initMongoose().then(() => {
   process.on('unhandledRejection', (err) => {
     debug.log('UNHANDLED REJECTION! 💥 Shutting down...')
     console.log(err)
-    console.log(server)
+    // console.log(server)
     // debug.log(err.name, err.message);
-    server.close(() => {
-      process.exit(1)
-    })
+    try {
+      server.close(() => {
+        process.exit(1)
+      })
+    } catch (e) {}
   })
 
   process.on('SIGTERM', () => {

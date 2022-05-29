@@ -1,16 +1,15 @@
 import Order from '../model/Order.model.js'
 import User from '../model/User.model.js'
+import Account from '../model/Account.model.js'
 import { registrationValidation } from '../validation/auth.validation.js'
-import { generateHashedPassword } from './auth.ctrl.js'
 import debug from '../utils/logger.js'
 import { mongooseInstance } from '../mongodb/mongo.js'
 
 export const fetchUser = async (query = {}, options) => {
   query.deleted = false
-  query.selected_account = true
-  debug.info(query)
-  const user = await User.findOne(query, options).lean()
-  return user
+  let user = User.findOne(query, options)
+
+  return await user.lean()
 }
 
 export const fetchAccounts = async (query = {}, options) => {
@@ -19,6 +18,29 @@ export const fetchAccounts = async (query = {}, options) => {
   // debug.info(query)
   const user = await User.find(query, options).lean()
   return user
+}
+
+export const createUser = async (data, session) => {
+  let userData = await fetchUser({
+    phone: data.phone,
+    phone_ext: data.phone_ext,
+    deleted: false,
+  })
+  if (!userData) {
+    const hashedPassword = await User.hashPassword(data.password)
+    userData = await User.insertMany(
+      [
+        {
+          phone: data.phone,
+          phone_ext: data.phone_ext,
+          password: hashedPassword,
+        },
+      ],
+      { session: session },
+    )
+    userData = userData[0]
+  }
+  return userData
 }
 
 export const selectAccount = async (data) => {
@@ -99,21 +121,30 @@ export const selectAccount = async (data) => {
 //   })
 // }
 
-export const accountsCount = async (phone, phone_ext) => {
-  const userByPhone = await User.count({
+export const accountsCountByPhone = async (phone, phone_ext) => {
+  const user = await User.findOne({
     phone: phone,
     phone_ext: phone_ext,
     deleted: false,
-  })
-  return userByPhone
+  }).lean()
+
+  const count = await Account.count({ user_id: user._id })
+
+  return count
+}
+
+export const accountsCountByUserId = async (userId) => {
+  const count = await Account.count({ user_id: userId })
+
+  return count
 }
 
 export const usernameExists = async (username) => {
-  const userByUsername = await User.findOne({ username: username })
-  return userByUsername ? true : false
+  const userByUsername = await Account.count({ username: username })
+  return !!userByUsername
 }
 
-export const createAccount = async (data) => {
+export const createAccount = async (data = {}, session) => {
   // TODO: prevent user to create account if he is in a ban list
   const validateRegister = registrationValidation(data)
   if (validateRegister.error) {
@@ -126,7 +157,7 @@ export const createAccount = async (data) => {
     }
   }
 
-  const acctCount = await accountsCount(data.phone, data.phone_ext)
+  const acctCount = await accountsCountByUserId(data.user_id)
   if (acctCount >= 5) {
     throw {
       error: 'maximum of 5 accounts reached per phone number',
@@ -139,23 +170,23 @@ export const createAccount = async (data) => {
   if (usernameExist) {
     throw { error: 'username already exists', status: 400, error_code: 104 }
   }
-  const hashedPassword = await generateHashedPassword(data.password)
 
-  // set all owned account as not selected
-  await User.updateMany(
-    { phone: data.phone, phone_ext: data.phone_ext },
-    { selected_account: false },
+  let accountData = await Account.create(
+    [
+      {
+        user_id: data.user_id,
+        username: data.username,
+      },
+    ],
+    { session },
   )
-
-  const userData = new User({
-    username: data.username,
-    phone: data.phone,
-    phone_ext: data.phone_ext,
-    password: hashedPassword,
-    selected_account: true,
-  })
-  const savedUser = await userData.save()
-  return savedUser._id
+  accountData = accountData[0]
+  await User.updateOne(
+    { phone: data.phone, phone_ext: data.phone_ext },
+    { selected_account: accountData._id },
+    { session },
+  )
+  return accountData
 }
 
 export const balancePending = async (providerId) => {

@@ -2,6 +2,7 @@ import Joi from 'joi'
 
 export const registrationValidation = (data) => {
   const schema = Joi.object({
+    user_id: Joi.object().required(),
     username: Joi.string().min(2).required(),
     phone: Joi.string().min(6).required(),
     phone_ext: Joi.string().max(10).required(),

@@ -100,7 +100,7 @@ app.use(function (err, req, res, next) {
   } else {
     message = 'Unknown Error'
   }
-  debug.info(err.status)
+  // debug.info(err.status)
   debug.error(message)
   res.status(err?.status || 500)
   if (err.error) {
