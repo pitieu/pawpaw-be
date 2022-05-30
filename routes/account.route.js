@@ -44,11 +44,13 @@ const _fetchUser = async (req, res, next) => {
     next(err)
   }
 }
+
 const _fetchAccounts = async (req, res, next) => {
   try {
     let accounts = await fetchAccounts({
       phone: req.user.phone,
       phone_ext: req.user.phone_ext,
+      deleted: false,
     })
 
     accounts = accounts.map((account) => filterAccountPublicFields(account))
@@ -63,10 +65,11 @@ const _fetchAccounts = async (req, res, next) => {
 const _selectAccount = async (req, res, next) => {
   try {
     console.log(req.params)
-    let accounts = await selectAccount({
+    let account = await selectAccount({
+      user_id: req.user._id,
       phone: req.user.phone,
       phone_ext: req.user.phone_ext,
-      user_id: req.params.user_id,
+      account_id: req.params.account_id,
     })
 
     res
@@ -78,7 +81,7 @@ const _selectAccount = async (req, res, next) => {
 }
 
 router.get('/fetch', authArea, _fetchUser)
-router.put('/:user_id/select', authArea, _selectAccount)
+router.put('/:account_id/select', authArea, _selectAccount)
 router.get('/', authArea, _fetchAccounts)
 
 export default router

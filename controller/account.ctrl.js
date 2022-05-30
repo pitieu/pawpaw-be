@@ -15,9 +15,9 @@ export const fetchUser = async (query = {}, options) => {
 export const fetchAccounts = async (query = {}, options) => {
   query.deleted = false
   // query.selected_account = true
-  // debug.info(query)
-  const user = await User.find(query, options).lean()
-  return user
+  const user = await User.findOne(query, options).lean()
+  const accounts = await Account.find({ user_id: user._id }).lean()
+  return accounts
 }
 
 export const createUser = async (data, session) => {
@@ -44,33 +44,21 @@ export const createUser = async (data, session) => {
 }
 
 export const selectAccount = async (data) => {
-  let session = await mongooseInstance.startSession()
-  session.startTransaction()
-  try {
-    await User.updateMany(
-      { phone: data.phone, phone_ext: data.phone_ext, deleted: false },
-      { selected_account: false },
-      { session },
-    )
-    const selectTrue = await User.updateOne(
-      {
-        phone: data.phone,
-        phone_ext: data.phone_ext,
-        _id: data.user_id,
-        deleted: false,
-      },
-      { selected_account: true },
-      { session },
-    )
-
-    if (selectTrue.matchedCount != 1) {
-      throw { error: 'failed to select account', status: 400 }
-    }
-    await session.commitTransaction()
-  } catch (e) {
-    await session.abortTransaction()
-    throw e
+  const count = await Account.count({
+    user_id: data.user_id,
+    _id: data.account_id,
+  })
+  if (!count) {
+    throw { error: 'could not find selected account', status: 400 }
   }
+  return await User.updateOne(
+    {
+      phone: data.phone,
+      phone_ext: data.phone_ext,
+      deleted: false,
+    },
+    { selected_account: data.account_id },
+  )
 }
 
 // export const updateUser = (req, res, next) => {

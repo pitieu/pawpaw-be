@@ -15,7 +15,6 @@ export const filterUserPublicFields = (data) => {
     geo: data.geo,
     phone_validated: data.phone_validated,
     bank_details: data.bank_details,
-    selected_account: data.selected_account,
   }
 }
 

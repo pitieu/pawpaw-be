@@ -45,6 +45,7 @@ export const login = async (data) => {
     }
 
   const payload = {
+    _id: user._id,
     phone: user.phone,
     phone_ext: user.phone_ext,
   }
