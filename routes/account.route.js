@@ -10,6 +10,7 @@ import {
   fetchAccounts,
   selectAccount,
 } from '../controller/account.ctrl.js'
+import User from '../model/User.model.js'
 import {
   filterUserPublicFields,
   filterAccountPublicFields,
@@ -32,10 +33,27 @@ passport.deserializeUser(function (obj, done) {
 
 const _fetchUser = async (req, res, next) => {
   try {
-    const user = await fetchUser({
-      phone: req.user.phone,
-      phone_ext: req.user.phone_ext,
-    })
+    let user = await User.findOne(
+      {
+        phone: req.user.phone,
+        phone_ext: req.user.phone_ext,
+        deleted: false,
+      },
+      {
+        _id: 1,
+        phone: 1,
+        phone_ext: 1,
+        accounts: 1,
+        password: 1,
+        selected_account: 1,
+      },
+    )
+      .populate('selected_account', { _id: 1, username: 1 })
+      .lean()
+    // const user = await fetchUser({
+    //   phone: req.user.phone,
+    //   phone_ext: req.user.phone_ext,
+    // })
 
     // debug.info(filterUserPublicFields(user))
     res.status(200).send(filterUserPublicFields(user))

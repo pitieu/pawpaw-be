@@ -93,6 +93,7 @@ const _login = async (req, res, next) => {
     res.header('auth-token', tokens.accessToken).status(200).json({
       access_token: tokens.accessToken,
       refresh_token: tokens.refreshToken,
+      user: tokens.user,
       status: 200,
     })
   } catch (err) {

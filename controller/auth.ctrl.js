@@ -27,8 +27,17 @@ export const login = async (data) => {
       phone_ext: data.phone_ext,
       deleted: false,
     },
-    { _id: 1, phone: 1, phone_ext: 1, accounts: 1, password: 1 },
-  ).lean()
+    {
+      _id: 1,
+      phone: 1,
+      phone_ext: 1,
+      accounts: 1,
+      password: 1,
+      selected_account: 1,
+    },
+  )
+    .populate('selected_account', { _id: 1, username: 1 })
+    .lean()
 
   if (!user)
     throw {
