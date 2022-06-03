@@ -26,8 +26,6 @@ export const filterAccountPublicFields = (data) => {
   return {
     _id: data._id,
     username: data.username,
-    phone: data.phone,
-    phone_ext: data.phone_ext,
     website: data.website,
     biography: data.biography,
     gender: data.gender,

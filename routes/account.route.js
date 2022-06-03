@@ -15,6 +15,7 @@ import {
   filterUserPublicFields,
   filterAccountPublicFields,
 } from '../validation/account.validation.js'
+import Account from '../model/Account.model.js'
 
 const __dirname = path.resolve()
 
@@ -83,16 +84,18 @@ const _fetchAccounts = async (req, res, next) => {
 const _selectAccount = async (req, res, next) => {
   try {
     console.log(req.params)
-    let account = await selectAccount({
+    let accountSelected = await selectAccount({
       user_id: req.user._id,
       phone: req.user.phone,
       phone_ext: req.user.phone_ext,
       account_id: req.params.account_id,
     })
 
-    res
-      .status(200)
-      .send({ message: 'successfully selected account', status: 200 })
+    res.status(200).send({
+      message: 'successfully selected account',
+      status: 200,
+      user: filterUserPublicFields(accountSelected),
+    })
   } catch (err) {
     next(err)
   }

@@ -51,14 +51,15 @@ export const selectAccount = async (data) => {
   if (!count) {
     throw { error: 'could not find selected account', status: 400 }
   }
-  return await User.updateOne(
+  return await User.findOneAndUpdate(
     {
       phone: data.phone,
       phone_ext: data.phone_ext,
       deleted: false,
     },
     { selected_account: data.account_id },
-  )
+    { new: true },
+  ).populate('selected_account')
 }
 
 // export const updateUser = (req, res, next) => {
