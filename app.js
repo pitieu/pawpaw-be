@@ -101,6 +101,7 @@ app.use(function (err, req, res, next) {
     message = 'Unknown Error'
   }
   // debug.info(err.status)
+  console.log(err)
   debug.error(message)
   res.status(err?.status || 500)
   if (err.error) {

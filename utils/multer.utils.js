@@ -3,7 +3,6 @@ import multer from 'multer'
 const storage = (storagePath) => {
   return multer.diskStorage({
     destination: (req, file, cb) => {
-      // console.log('storagePath', storagePath)
       cb(null, storagePath)
     },
     filename: (req, file, cb) => {
@@ -33,12 +32,12 @@ const imageFilter = (req, file, cb) => {
 
 export const uploadProfile = multer({
   storage: storage('uploads/profile/'),
-  limits: { fileSize: 1024 * 1024 * 1 }, // limit size to 1 Mb
+  limits: { fileSize: 1024 * 1024 * 20, fieldSize: 25 * 1024 * 1024 }, // limit size to 1 Mb
   fileFilter: imageFilter,
 })
 
 export const uploadServices = multer({
   storage: storage('uploads/services/'),
-  limits: { fileSize: 1024 * 1024 * 1 }, // limit size to 1 Mb
+  limits: { fileSize: 1024 * 1024 * 20, fieldSize: 25 * 1024 * 1024 }, // limit size to 1 Mb
   fileFilter: imageFilter,
 })

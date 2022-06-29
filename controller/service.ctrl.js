@@ -74,32 +74,33 @@ export const deleteService = (req, res, next) => {
 }
 
 export const addService = async (data, ownerId) => {
-  const serviceValidation = addServiceValidation(data)
-  if (serviceValidation.error)
-    throw {
-      error: serviceValidation.error.details[0].message,
-      status: 400,
-    }
+  // const serviceValidation = addServiceValidation(data)
+  // if (serviceValidation.error)
+  //   throw {
+  //     error: serviceValidation.error.details[0].message,
+  //     status: 400,
+  //   }
 
   const storeId = await fetchStore({ owner_id: ownerId })
   const category = await fetchServiceCategory({ key: data.category })
   if (!category) {
     throw { error: 'invalid category', status: 400 }
   }
-  const serviceData = new Service({
+  const _data = {
     user_id: ownerId,
     store_id: storeId._id,
     name: data.name.trim(),
-    description: data.description.trim(),
+    description: data.description?.trim(),
     products: data.products,
     product_addons: data.product_addons,
     photos: data.photos,
-    price_per_km: data.price_per_km,
+    price_per_km: data.price_per_km || 0,
     category: category._id,
-    opening_hours: data.opening_hours,
-    negotiable_hours: data.negotiable_hours == 'true',
-    negotiable_hours_rate: parseInt(data.negotiable_hours_rate),
-  })
-
-  return await serviceData.save()
+    // opening_hours: data.opening_hours,
+    // negotiable_hours: data.negotiable_hours == 'true',
+    // negotiable_hours_rate: parseInt(data.negotiable_hours_rate),
+  }
+  const serviceData = new Service(_data)
+  const created = await serviceData.save()
+  return created
 }

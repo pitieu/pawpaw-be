@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import uniqueValidator from 'mongoose-unique-validator'
 
 const photo = {
+  primary: { type: Boolean },
   filename: { type: String },
   data: { type: Buffer },
   content_type: { type: String },
@@ -29,8 +30,14 @@ const product = {
   description: { type: String },
   price: { type: Number },
 
-  // order: {type: Number},
-  // default: {type: Boolean},
+  weight: {
+    start: { type: Number },
+    end: { type: Number },
+  },
+  weightSelected: { type: Boolean },
+
+  time: { type: String },
+  timeSelected: { type: Boolean },
 
   booking_period: {
     start: { type: String },
