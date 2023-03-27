@@ -1,9 +1,31 @@
+import passport from 'passport'
+import session from 'express-session'
+
 import { verifyJWT } from '../utils/jwt.utils.js'
+import { unauthorizedError } from '../utils/error.utils.js'
+
+export const sessionMiddleware = session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: true },
+})
+
+// serialize and deserialize user functions
+passport.serializeUser(function (user, done) {
+  done(null, user)
+})
+
+passport.deserializeUser(function (obj, done) {
+  done(null, obj)
+})
+
+export const passportMiddleware = passport.initialize()
 
 // Deny Access if token is invalid or missing in auth-token
 export const authArea = (req, res, next) => {
   const token = req.header('auth-token')
-  if (!token) return res.status(401).send('Access Denied')
+  if (!token) throw new unauthorizedError('Access Denied')
 
   try {
     const { payload, expired } = verifyJWT(
@@ -13,13 +35,13 @@ export const authArea = (req, res, next) => {
     )
     req.user = payload
     if (expired !== false) {
-      return res.status(400).send('Token expired')
+      throw new unauthorizedError('Token expired')
     }
     if (payload) {
       return next()
     }
-    res.status(400).send('Invalid Token')
+    throw new unauthorizedError('Invalid Token')
   } catch (err) {
-    res.status(400).send('Invalid Token')
+    throw new unauthorizedError('Invalid Token')
   }
 }

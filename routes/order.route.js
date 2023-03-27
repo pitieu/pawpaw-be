@@ -1,5 +1,4 @@
 import express from 'express'
-
 import debug from '../utils/logger.js'
 
 import {
@@ -8,14 +7,28 @@ import {
   completeOrder,
 } from '../controller/order.ctrl.js'
 import { refund } from '../controller/payment.ctrl.js'
-import { authArea } from '../middleware/auth.middleware.js'
+import * as AuthMiddleware from '../middleware/auth.middleware.js'
+import { handleErrors } from '../middleware/error.middleware.js'
+import { badRequestError } from '../utils/error.utils.js'
 
 const router = express.Router()
 
-const _createOrder = async (req, res, next) => {
+router.use(AuthMiddleware.initialize)
+router.use(AuthMiddleware.session)
+
+router.post('/', AuthMiddleware.authArea, createOrderHandler)
+router.post('/:order_id/approve', AuthMiddleware.authArea, approveOrderHandler)
+router.post(
+  '/:order_id/complete',
+  AuthMiddleware.authArea,
+  completeOrderHandler,
+)
+router.post('/:order_id/refund', AuthMiddleware.authArea, refundCustomerHandler)
+
+const createOrderHandler = async (req, res, next) => {
   try {
     if (!req.body.service_id)
-      throw { error: 'service_id is required', status: 400 }
+      throw new badRequestError('Service id is required')
 
     const order = await createOrder(req.body, req.user._id)
 
@@ -29,7 +42,7 @@ const _createOrder = async (req, res, next) => {
   }
 }
 
-const _approveOrder = async (req, res, next) => {
+const approveOrderHandler = async (req, res, next) => {
   try {
     const order = await approveOrder(
       req.params.order_id,
@@ -37,37 +50,30 @@ const _approveOrder = async (req, res, next) => {
       req.user._id,
       req.query.cancel_reason,
     )
-    res.status(200).send({ message: 'order approved sucessfully', status: 200 })
+    res.json({ message: 'order approved successfully', status: 200 })
   } catch (err) {
     next(err)
   }
 }
 
-const _completeOrder = async (req, res, next) => {
+const completeOrderHandler = async (req, res, next) => {
   try {
     const response = await completeOrder(req.params.order_id)
 
-    res
-      .status(200)
-      .send({ message: 'order completed successfully', status: 200 })
+    res.json({ message: 'order completed successfully', status: 200 })
   } catch (err) {
     next(err)
   }
 }
 
-const _refundCustomer = async (req, res, next) => {
+const refundCustomerHandler = async (req, res, next) => {
   try {
     const response = await refund(req.params.order_id, req.user._id)
 
-    res.status(200).send({ message: 'refund processing shortly', status: 200 })
+    res.json({ message: 'refund processing shortly', status: 200 })
   } catch (err) {
     next(err)
   }
 }
-
-router.post('/', authArea, _createOrder)
-router.post('/:order_id/approve', authArea, _approveOrder)
-router.post('/:order_id/complete', authArea, _completeOrder)
-router.post('/:order_id/refund', authArea, _refundCustomer)
 
 export default router

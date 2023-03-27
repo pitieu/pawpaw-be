@@ -1,12 +1,12 @@
 import express from 'express'
-import passport from 'passport'
 
 import debug from '../utils/logger.js'
 import { uploadProfile } from '../utils/multer.utils.js'
-import { listServices } from '../controller/service.ctrl.js'
 
+import { listServices } from '../controller/service.ctrl.js'
 import { fetchStore, updateStore } from '../controller/store.ctrl.js'
-import { authArea } from '../middleware/auth.middleware.js'
+
+import * as AuthMiddleware from '../middleware/auth.middleware.js'
 import {
   filterStorePublicFields,
   convertOpeningHoursToJson,
@@ -14,75 +14,63 @@ import {
 
 const router = express.Router()
 
-router.use(passport.initialize())
-router.use(passport.session())
+router.use(AuthMiddleware.initialize)
+router.use(AuthMiddleware.session)
 
-passport.serializeUser(function (user, done) {
-  done(null, user)
-})
+router.get('/:store_id/services', fetchStoreServiceHandler)
+router.get('/', AuthMiddleware.authArea, fetchOwnStoreHandler)
+router.get('/:store_id', fetchSpecificStoreHandler)
+router.put(
+  '/',
+  AuthMiddleware.authArea,
+  uploadProfile.single('photo'),
+  updateOwnStoreHandler,
+)
 
-passport.deserializeUser(function (obj, done) {
-  done(null, obj)
-})
-
-/*********************/
-/* ROUTES START HERE */
-/*********************/
-const _fetchStoreService = async (req, res, next) => {
-  debug.info("Fetch Store's services")
+const fetchStoreServiceHandler = async (req, res, next) => {
   try {
     let services = await listServices(
       { store_id: req.params.store_id },
       { 'photos.data': 0 },
     )
-    res.status(200).send(services)
+    res.json(services)
   } catch (err) {
     next(err)
   }
 }
 
-const _fetchOwnStore = async (req, res, next) => {
-  debug.info('Fetch own Store')
-
+const fetchOwnStoreHandler = async (req, res, next) => {
   try {
     let query = { owner_id: req.user._id }
     let storeData = await fetchStore(query)
     storeData = filterStorePublicFields(storeData)
-    res.status(200).send(storeData)
+    res.json(storeData)
   } catch (err) {
     next(err)
   }
 }
 
-const _fetchSpecificStore = async (req, res, next) => {
-  debug.info('Fetch Store')
-
+const fetchSpecificStoreHandler = async (req, res, next) => {
   try {
     let query = { id: req.query.store_id }
     let storeData = await fetchStore(query)
     storeData = filterStorePublicFields(storeData)
-    res.status(200).send(storeData)
+    res.json(storeData)
   } catch (err) {
     next(err)
   }
 }
 
-const _updateOwnStore = async (req, res, next) => {
-  debug.info('Update Store')
+const updateOwnStoreHandler = async (req, res, next) => {
   try {
     req.body.owner_id = req.user._id
     req.body.opening_hours = convertOpeningHoursToJson(req.body.opening_hours)
 
     await updateStore(req.body)
-    res.status(200).send({ message: 'store updated successfully', status: 200 })
+    res.json({ message: 'store updated successfully', status: 200 })
   } catch (err) {
     next(err)
   }
 }
-
-router.get('/:store_id/services', _fetchStoreService)
-router.get('/', authArea, _fetchOwnStore)
-router.get('/:store_id', _fetchSpecificStore)
-router.put('/', authArea, uploadProfile.single('photo'), _updateOwnStore)
 
 export default router

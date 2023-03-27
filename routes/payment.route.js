@@ -1,9 +1,9 @@
 import express from 'express'
 import dotenv from 'dotenv'
-import crypto from 'crypto'
 
 import debug from '../utils/logger.js'
-import { authArea } from '../middleware/auth.middleware.js'
+import { badRequestError, internalServerError } from '../utils/error.utils.js'
+
 import {
   addPaymentNotification,
   checkStatus,
@@ -12,21 +12,45 @@ import {
 } from '../controller/payment.ctrl.js'
 import { updateOrderStatus } from '../controller/order.ctrl.js'
 
+import * as AuthMiddleware from '../middleware/auth.middleware.js'
+
 dotenv.config({ path: './.env' })
 
 const router = express.Router()
 
-const _getMidtransToken = async (req, res, next) => {
+router.use(AuthMiddleware.initialize)
+router.use(AuthMiddleware.session)
+
+if (process.env.NODEJS_ENV == 'development') {
+  router.get('/order/:order_id/status', checkStatusHandler)
+  router.post('/order/:order_id/cancel', cancelPaymentHandler)
+}
+router.get('/token', getMidtransTokenHandler)
+router.post('/notifications/payment', paymentNotificationHandler)
+router.post('/notifications/recurring', recurringHandler)
+router.post('/notifications/payaccount', payaccountHandler)
+router.post('/notifications/redirect', okHandler)
+router.post('/notifications/unfinishedredirect', okHandler)
+router.post('/notifications/error', okHandler)
+router.post(
+  '/order/:order_id',
+  AuthMiddleware.authArea,
+  requestNewPaymentHandler,
+)
+
+// TODO - this whole code is only used for now to test the payment flow
+// Will be replaced with the payment gateway
+
+const getMidtransTokenHandler = async (req, res, next) => {
   try {
     const token = Buffer.from(process.env.MIDTRANS_SERVER_KEY + ':', 'utf-8')
-    console.log(token.toString('base64'))
     res.status(201).send({ token: token.toString('base64') })
   } catch (err) {
     next(err)
   }
 }
 
-const _paymentNotification = async (req, res, next) => {
+const paymentNotificationHandler = async (req, res, next) => {
   try {
     // const verifySignature =
     //   req.body.order_id +
@@ -52,63 +76,59 @@ const _paymentNotification = async (req, res, next) => {
       status.signature_key !== req.body.signature_key ||
       status.transaction_status !== req.body.transaction_status
     ) {
-      throw { error: 'Forbidden', status: 403 }
+      throw new badRequestError('Something went wrong')
     }
 
     await addPaymentNotification(req.body)
     try {
       if (req.body.status_code !== '200') {
-        throw { error: req.body.status_message, status: 400 }
+        throw new internalServerError(req.body.status_message)
       }
       const order = await updateOrderStatus(req.body)
     } catch (e) {
-      debug.error('Failed update order status')
-      console.log(e)
+      throw new internalServerError('Failed update order status')
     }
     // should always send 200 saying it received the notification from midtrans
     res.status(200).send()
   } catch (err) {
-    debug.error(req.body)
     next(err)
   }
 }
 
-const _recurring = (req, res, next) => {
+const recurringHandler = (req, res, next) => {
   debug.info(req.body)
   res.status(200).send()
 }
 
-const _payaccount = (req, res, next) => {
+const payaccountHandler = (req, res, next) => {
   debug.info(req.body)
   res.status(200).send()
 }
 
-const _ok = (req, res, next) => {
+const okHandler = (req, res, next) => {
   debug.info(req.body)
   res.status(200).send()
 }
 
-const _checkStatus = async (req, res, next) => {
+const checkStatusHandler = async (req, res, next) => {
   try {
     const status = await checkStatus(req.params.order_id)
-    debug.info(status)
     res.status(200).send(status)
   } catch (e) {
     next(e)
   }
 }
 
-const _cancelPayment = async (req, res, next) => {
+const cancelPaymentHandler = async (req, res, next) => {
   try {
     const status = await cancelPayment(req.params.order_id)
-    debug.info(status)
     res.status(200).send(status)
   } catch (e) {
     next(e)
   }
 }
 
-const _requestNewPayment = async (req, res, next) => {
+const requestNewPaymentHandler = async (req, res, next) => {
   try {
     req.body.customer = req.user
     const payment = await requestNewPayment(
@@ -116,7 +136,6 @@ const _requestNewPayment = async (req, res, next) => {
       req.body,
       req.user._id,
     )
-    debug.info(payment)
     res.status(200).send({
       message: 'new payment requested successfully',
       status: 200,
@@ -125,18 +144,5 @@ const _requestNewPayment = async (req, res, next) => {
     next(e)
   }
 }
-
-if (process.env.NODEJS_ENV == 'development') {
-  router.get('/order/:order_id/status', _checkStatus)
-  router.post('/order/:order_id/cancel', _cancelPayment)
-}
-router.get('/token', _getMidtransToken)
-router.post('/notifications/payment', _paymentNotification)
-router.post('/notifications/recurring', _recurring)
-router.post('/notifications/payaccount', _payaccount)
-router.post('/notifications/redirect', _ok)
-router.post('/notifications/unfinishedredirect', _ok)
-router.post('/notifications/error', _ok)
-router.post('/order/:order_id', authArea, _requestNewPayment)
 
 export default router

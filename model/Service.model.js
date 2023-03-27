@@ -73,7 +73,11 @@ export const serviceSchema = new mongoose.Schema(
     // like: { type: Boolean }, // todo: move it to it's own table
     products: [product],
     product_addons: [product],
-    price_per_km: { type: Number }, // transportation cost per km
+    delivery: {
+      delivery_location_home: { type: Boolean },
+      delivery_location_store: { type: Boolean },
+      price_per_km: { type: Number }, // transportation cost per km
+    },
     opening_hours: {
       mon: {
         opening_hour: { type: Number, min: 0, max: 23, default: 8 },

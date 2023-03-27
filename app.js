@@ -18,6 +18,8 @@ import storeRouter from './routes/store.route.js'
 import orderRouter from './routes/order.route.js'
 import paymentRouter from './routes/payment.route.js'
 import accountRouter from './routes/account.route.js'
+import { passportMiddleware } from './middleware/auth.middleware.js'
+import { handleErrors } from './middleware/error.middleware.js'
 
 var privateKey = fs.readFileSync('config/sslcert/key.pem')
 var certificate = fs.readFileSync('config/sslcert/cert.pem')
@@ -63,6 +65,8 @@ app.get('/', function (req, res, next) {
   res.send('ok')
 })
 
+app.use(passportMiddleware)
+
 // set Routes
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/store', storeRouter)
@@ -93,23 +97,7 @@ if (process.env.NODEJS_ENV === 'development') {
 //   }),
 // )
 
-app.use(function (err, req, res, next) {
-  let message = ''
-  if (err) {
-    message = err.message || err.error
-  } else {
-    message = 'Unknown Error'
-  }
-  // debug.info(err.status)
-  console.log(err)
-  debug.error(message)
-  res.status(err?.status || 500)
-  if (err.error) {
-    res.send(err)
-  } else {
-    res.send({ error: 'Woops, we encountered an error...', status: 500 })
-  }
-})
+app.use(handleErrors)
 
 export const httpServer = http.createServer(app)
 export const httpsServer = https.createServer(credentials, app)

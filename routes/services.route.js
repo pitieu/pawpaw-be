@@ -1,176 +1,202 @@
 import express from 'express'
 import passport from 'passport'
-import fs from 'fs'
 import path from 'path'
-import sharp from 'sharp'
+
+import Service from '../model/Service.model.js'
+import * as ServiceCtrl from '../controller/service.ctrl.js'
+import * as MulterUtils from '../utils/multer.utils.js'
+import debug from '../utils/logger.js'
+
+import { authArea } from '../middleware/auth.middleware.js'
+import * as ServiceMiddleware from '../middleware/services.middleware.js'
+import * as AuthMiddleware from '../middleware/auth.middleware.js'
+import { handleErrors } from '../middleware/error.middleware.js'
 
 import {
-  fetchService,
-  listServices,
-  addService,
-  updateService,
-  deleteService,
-  listServiceCategories,
-} from '../controller/service.ctrl.js'
-import { fetchStore } from '../controller/store.ctrl.js'
-import {
-  convertOpeningHoursToJson,
-  addServiceValidation,
-} from '../validation/service.validation.js'
-import { authArea } from '../middleware/auth.middleware.js'
-import { uploadServices } from '../utils/multer.utils.js'
-import debug from '../utils/logger.js'
+  badRequestError,
+  notFoundError,
+  internalServerError,
+} from '../utils/error.utils.js'
 
 const router = express.Router()
 
 const __dirname = path.resolve()
 
-router.use(passport.initialize())
-router.use(passport.session())
+router.use(AuthMiddleware.initialize)
+router.use(AuthMiddleware.session)
 
-passport.serializeUser(function (user, done) {
-  done(null, user)
-})
+router.post(
+  '/',
+  authArea,
+  ServiceMiddleware.hasAStore,
+  ServiceMiddleware.sanitizeServiceData,
+  MulterUtils.uploadServices.array('photos', 5),
+  ServiceMiddleware.convertProductFields,
+  ServiceMiddleware.handlePhotos,
+  ServiceMiddleware.sanitizeServiceData,
+  createServiceHandler,
+  ServiceMiddleware.cleanupPhotosOnError,
+)
 
-passport.deserializeUser(function (obj, done) {
-  done(null, obj)
-})
+router.get('/:service_id/', fetchServiceHandler)
+router.patch(
+  '/:serviceId',
+  authArea,
+  ServiceMiddleware.sanitizeServiceData,
+  ServiceMiddleware.doesUserOwnService,
+  MulterUtils.uploadServices.array('photos', 4),
+  ServiceMiddleware.convertProductFields,
+  ServiceMiddleware.handlePhotos,
+  ServiceMiddleware.sanitizeServiceData,
+  updateServiceHandler,
+  ServiceMiddleware.cleanupPhotosOnError,
+)
 
-const _createService = async (req, res, next) => {
+router.delete(
+  '/:service_id',
+  authArea,
+  ServiceMiddleware.doesUserOwnService,
+  ServiceCtrl.deleteService,
+)
+router.get('/category/list', listServiceCategoriesHandler)
+router.get('/', authArea, listOwnedServicesHandler)
+router.get('/images/:image', showServiceImageHandler)
+
+const updateServiceHandler = async (req, res, next) => {
   try {
-    const hasAStore = await fetchStore({ owner_id: req.user._id })
-    if (!hasAStore)
-      throw {
-        error: 'needs to create a store before it can create a service',
-        status: 400,
-      }
+    const serviceId = req.params.serviceId
+    const ownerId = req.user._id
 
-    if (req.body.products?.length) {
-      req.body.products = JSON.parse(req.body.products)
+    const photos = req.files?.map((file) => ({
+      primary: file.originalname === req.body.primary_photo,
+      filename: `${file.filename}.webp`,
+      content_type: file.mimetype,
+    }))
+
+    const { price_per_km = 0, ...serviceData } = req.body
+    const updatedService = await ServiceCtrl.updateService(
+      serviceId,
+      ownerId,
+      serviceData,
+      price_per_km,
+      photos,
+    )
+
+    if (!updatedService) {
+      throw new notFoundError('service not found')
     }
-    if (req.body.product_addons?.length) {
-      req.body.product_addons = JSON.parse(req.body.product_addons)
-    }
 
-    if (!req.body.price_per_km) {
-      req.body.price_per_km = 0
-    }
-    delete req.body.primary_photo
+    res.json(updatedService)
+  } catch (err) {
+    next(err)
+  }
+}
 
-    // if (req.body.opening_hours) {
-    //   req.body.opening_hours = convertOpeningHoursToJson(req.body.opening_hours)
-    // }
+const createServiceHandler = async (req, res, next) => {
+  try {
+    const {
+      name,
+      description,
+      category,
+      products,
+      product_addons,
+      price_per_km,
+      delivery_location_store,
+      delivery_location_home,
+      opening_hours,
+      negotiable_hours,
+      negotiable_hours_rate,
+    } = req.body
 
-    // req.body.negotiable_hours_rate = parseInt(req.body.negotiable_hours_rate)
-    // req.body.negotiable_hours = req.body.negotiable_hours == 'true'
+    // create a new service object with the extracted properties
+    const service = new Service({
+      name,
+      description,
+      category,
+      products,
+      product_addons,
+      price_per_km,
+      delivery_location_store,
+      delivery_location_home,
+      opening_hours,
+      negotiable_hours,
+      negotiable_hours_rate,
+    })
 
-    let photos = []
-    if (req.files) {
-      for (let i = 0; i < req.files.length; i++) {
-        const file = req.files[i]
-        const filename = `${file.filename}.webp`
-        debug.info('file', filename)
+    // save the service to the database
+    await service.save()
 
-        const buffer = fs.readFileSync(
-          path.join(__dirname + '/uploads/services/' + file.filename),
-        )
-        // todo consider using multer-s3
-        // https://stackoverflow.com/questions/40494050/uploading-image-to-amazon-s3-using-multer-s3-nodejs
-
-        // todo make resize image work asynchronously to avoid server overloading
-        await sharp(buffer)
-          .webp({ quality: 20 })
-          .toFile('./uploads/services/' + filename)
-
-        photos.push({
-          primary: file.originalname === req.body.primary_photo,
-          filename: filename,
-          // data: buffer,
-          content_type: file.mimetype,
-        })
-      }
-    }
-    const serviceValidation = addServiceValidation(req.body)
-    if (serviceValidation.error)
-      throw {
-        error: serviceValidation.error.details[0].message,
-        status: 400,
-      }
-
-    req.body.photos = photos
-    debug.info(req.files)
-    debug.info(photos)
-    const newService = await addService(req.body, req.user._id)
-
-    res.status(201).send({
-      status: 201,
-      message: 'service created successfully',
-      service_id: newService._id,
+    // send a response back to the client with the created service object
+    res.status(201).json({
+      status: 'success',
+      data: {
+        service,
+      },
     })
   } catch (err) {
-    try {
-      if (req.files) {
-        debug.info('Cleanup uploaded images because failed to create service')
-        req.files.forEach((file) => {
-          fs.unlink(__dirname + '/uploads/services/' + file.filename, () => {
-            debug.info(
-              'deleted ',
-              __dirname + '/uploads/services/' + file.filename,
-            )
-          })
-          fs.unlink(
-            __dirname + '/uploads/services/' + file.filename + '.webp',
-            () => {
-              debug.info(
-                'deleted ',
-                __dirname + '/uploads/services/' + file.filename + '.webp',
-              )
-            },
-          )
-        })
-      }
-    } catch (e) {}
-    next(err)
+    throw new ServiceErrors.ServiceUploadError()
   }
 }
 
-const _fetchService = async (req, res, next) => {
+const fetchServiceHandler = async (req, res, next) => {
   try {
-    console.log('_fetchService')
-    let service = await fetchService(
-      { _id: req.params.service_id },
+    let service = await Service.findOne(
+      { _id: req.params.service_id, deleted: false },
       { 'photos.data': 0, __v: 0, updatedAt: 0, createdAt: 0, deleted: 0 },
     )
-    res.status(200).send(service)
+      .populate('store_id', { __v: 0, updatedAt: 0, createdAt: 0, deleted: 0 })
+      .lean()
+
+    if (!service) {
+      throw new ServiceErrors.ServiceNotFoundError()
+    }
+
+    res.json(service)
   } catch (err) {
     next(err)
   }
 }
 
-const _listServiceCategories = async (req, res, next) => {
+const listServiceCategoriesHandler = async (req, res, next) => {
   try {
-    debug.info('List Categories')
-    const categories = await listServiceCategories({})
-    res.status(200).send({ categories: categories })
+    const categories = await ServiceCtrl.listServiceCategories({})
+    if (!categories) {
+      throw new ServiceErrors.ServiceCategoriesNotFoundError()
+    }
+    res.json({ categories: categories })
   } catch (err) {
     next(err)
   }
 }
 
-const _listOwnedServices = async (req, res, next) => {
+const listOwnedServicesHandler = async (req, res, next) => {
   try {
-    console.log('list services', req.user)
-    let services = await listServices(
+    let services = await Service.find(
       { user_id: req.user._id, deleted: false },
-      { 'photos.data': 0, __v: 0, updatedAt: 0, createdAt: 0, deleted: 0 },
+      {
+        'photos.data': 0,
+        __v: 0,
+        updatedAt: 0,
+        createdAt: 0,
+        deleted: 0,
+        opening_hours: 0,
+      },
     )
-    res.status(200).send(services)
+      .populate('store_id', { __v: 0, updatedAt: 0, createdAt: 0, deleted: 0 })
+      .populate('category', { key: 1, _id: 1 })
+      .lean()
+
+    if (!services) {
+      throw new ServiceErrors.ServiceNotFoundError()
+    }
+
+    res.json(services)
   } catch (err) {
     next(err)
   }
 }
 
-const _showServiceImage = async (req, res, next) => {
+const showServiceImageHandler = async (req, res, next) => {
   // todo serve images from amazon s3
   try {
     res
@@ -180,13 +206,5 @@ const _showServiceImage = async (req, res, next) => {
     next(err)
   }
 }
-
-router.post('/', authArea, uploadServices.array('photos', 5), _createService)
-router.get('/:service_id/', _fetchService)
-router.put('/:service_id', authArea, updateService)
-router.delete('/:service_id', authArea, deleteService)
-router.get('/category/list', _listServiceCategories)
-router.get('/', authArea, _listOwnedServices)
-router.get('/images/:image', _showServiceImage)
 
 export default router

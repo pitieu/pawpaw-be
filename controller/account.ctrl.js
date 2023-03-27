@@ -1,9 +1,8 @@
 import Order from '../model/Order.model.js'
 import User from '../model/User.model.js'
 import Account from '../model/Account.model.js'
+import PostalCode from '../model/PostalCode.model.js'
 import { registrationValidation } from '../validation/auth.validation.js'
-import debug from '../utils/logger.js'
-import { mongooseInstance } from '../mongodb/mongo.js'
 
 export const fetchUser = async (query = {}, options) => {
   query.deleted = false
@@ -61,54 +60,6 @@ export const selectAccount = async (data) => {
     { new: true },
   ).populate('selected_account')
 }
-
-// export const updateUser = (req, res, next) => {
-//   const updateData = {
-//     fullname: req.fullname,
-//     website: req.website,
-//     biography: req.biography,
-//     gender: req.gender,
-//     location: req.location,
-//     profilePhoto: req.profilePhoto,
-//     geo: req.geo,
-//   }
-//   return User.updateOne({ _id: req.user.id }, updateData, (result) => {
-//     return result
-//   })
-// }
-
-// export const deleteUser = (req, res, next) => {
-//   // users flagged as deleted should be deleted after a certain period
-//   const deleteData = {
-//     deletedAt: new Date(),
-//     deleted: true,
-//   }
-
-//   return User.updateOne({ _id: req.user.id }, deleteData, (result) => {
-//     return result
-//   })
-// }
-
-// export const updatePhone = (req, res, next) => {
-//   const updateData = {
-//     phone: req.phone,
-//     phoneExt: req.phoneExt,
-//   }
-
-//   return User.updateOne({ _id: req.user.id }, updateData, (result) => {
-//     return result
-//   })
-// }
-
-// export const updateEmail = (req, res, next) => {
-//   const updateData = {
-//     email: req.email,
-//   }
-
-//   return User.updateOne({ _id: req.user.id }, updateData, (result) => {
-//     return result
-//   })
-// }
 
 export const accountsCountByPhone = async (phone, phone_ext) => {
   const user = await User.findOne({
@@ -228,4 +179,70 @@ export const balanceWithdrawable = async (providerId) => {
   }
 
   return total.total
+}
+
+export const searchAddress = async (search) => {
+  const searchWords = search.split(' ')
+  let query = []
+  // match by word
+  searchWords.forEach((word) => {
+    const reg = new RegExp(word)
+    query.push({ 'province.province_name': { $regex: reg, $options: 'i' } })
+    query.push({ sub_district: { $regex: reg, $options: 'i' } })
+    query.push({ city: { $regex: reg, $options: 'i' } })
+  })
+
+  const total = await PostalCode.aggregate([
+    {
+      $lookup: {
+        from: 'provinces',
+        localField: 'province_id',
+        foreignField: '_id',
+        as: 'province',
+      },
+    },
+    {
+      $unwind: {
+        path: '$province',
+      },
+    },
+    {
+      $match: {
+        $or: query,
+      },
+    },
+    {
+      $project: {
+        _id: true,
+        searchField: {
+          $concat: [
+            '$province.province_name',
+            ', ',
+            '$city',
+            ', ',
+            '$sub_district',
+          ],
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        // sub_district: '$sub_district',
+        // city: '$city',
+        // province_code: '$province_code',
+        // postal_code: '$postal_code',
+        // province: '$province',
+        // province_en: '$province_en',
+        searchField: { $addToSet: '$searchField' },
+      },
+    },
+    {
+      $unwind: {
+        path: '$searchField',
+      },
+    },
+  ])
+
+  return total
 }

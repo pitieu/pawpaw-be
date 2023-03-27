@@ -1,6 +1,10 @@
 import dotenv from 'dotenv'
 
 import { populateServiceCategory } from './initialization/ServiceCategory.js'
+import {
+  populatePostalCode,
+  populateProvinces,
+} from './initialization/address.js'
 import debug from './utils/logger.js'
 import { httpServer, httpsServer } from './app.js'
 import { initMongoose } from './mongodb/mongo.js'
@@ -11,8 +15,10 @@ const portHttp = process.env.APP_HTTP_PORT || 8081
 const portHttps = process.env.APP_HTTPS_PORT || 8082
 
 initMongoose().then(() => {
+  // Initialize missing data
   const initializeMissingData = async () => {
     await populateServiceCategory()
+    await populateProvinces()
   }
   try {
     initializeMissingData()
@@ -20,6 +26,7 @@ initMongoose().then(() => {
     console.log(e)
   }
 
+  // Run server
   httpServer.listen(portHttp, async () => {
     debug.log(`Http App running on port ${portHttp}...`)
   })
