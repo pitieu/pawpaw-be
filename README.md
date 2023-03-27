@@ -65,18 +65,18 @@ https://gist.github.com/wosephjeber/aa174fb851dfe87e644e
 
 ### Folder structure
 
-config - for now ssl but can contain other configurations later
-controller -
-data - mostly json data that requires as initialization data for mongodb
-initialization - scripts that will run when the app starts
-middleware - ExpressJs middlewares
-model - Mongoose DB models
-mongodb - mongoose initialization and configuration
-routes - API routes
-tests - unit tests
-uploads - uploaded files will go here for now later they will be moved to AWS S3 or something similar
-utils - utility functions used throughout the whole api
-validation - Data validation mostly used in routes to validate and prevent malicious user input
+- config - for now ssl but can contain other configurations later
+- controller -
+- data - mostly json data that requires as initialization data for mongodb
+- initialization - scripts that will run when the app starts
+- middleware - ExpressJs middlewares
+- model - Mongoose DB models
+- mongodb - mongoose initialization and configuration
+- routes - API routes
+- tests - unit tests
+- uploads - uploaded files will go here for now later they will be moved to AWS S3 or something similar
+- utils - utility functions used throughout the whole api
+- validation - Data validation mostly used in routes to validate and prevent malicious user input
 
 ### Todo
 
